@@ -277,11 +277,6 @@ export default function QuestionApp() {
             )}
           </div>
         </div>
-
-        {/* Footer info */}
-        <div className="text-center mt-6 text-white/80 text-sm">
-          <p>Proiect AI - Algoritmi și Strategii</p>
-        </div>
       </div>
     </div>
   );
