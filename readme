@@ -1,0 +1,21 @@
+Pt react:
+
+cd frontend
+npm install lucide-react
+
+Pt instalare tailwind:
+
+cd frontend
+npm uninstall tailwindcss @tailwindcss/postcss
+npm install -D tailwindcss@^3.4.0 postcss autoprefixer
+npx tailwindcss init -p
+
+Pt a rula aplicatia:
+
+# Terminal 1 - Backend
+cd Project-AI
+uvicorn app.main:app --reload
+
+# Terminal 2 - Frontend
+cd frontend
+npm start
