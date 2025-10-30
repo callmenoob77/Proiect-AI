@@ -19,3 +19,11 @@ uvicorn app.main:app --reload
 # Terminal 2 - Frontend
 cd frontend
 npm start
+
+//noi modificari
+am modificat enums-urile si problem_knowledge de la generator.py ca sa avem mai multe tipuri de probleme de unde putem alege (pb din curs si strategiile lor de rezolvare)
+ca sa va mearga trebuie sa modificati si ceva in baza de date, codul de mai jos sa il inserati in pgadmin
+ALTER TYPE question_type ADD VALUE 'RIVER_CROSSING';
+ALTER TYPE question_type ADD VALUE 'WATER_JUG';
+ALTER TYPE question_type ADD VALUE 'SLIDING_PUZZLE';
+ALTER TYPE question_type ADD VALUE 'X_O';
