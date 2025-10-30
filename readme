@@ -1,14 +1,7 @@
-Pt react:
-
+git pull
 cd frontend
-npm install lucide-react
-
-Pt instalare tailwind:
-
-cd frontend
-npm uninstall tailwindcss @tailwindcss/postcss
-npm install -D tailwindcss@^3.4.0 postcss autoprefixer
-npx tailwindcss init -p
+npm install
+npm start
 
 Pt a rula aplicatia:
 
