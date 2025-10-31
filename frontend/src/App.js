@@ -116,8 +116,7 @@ export default function QuestionApp() {
           <div className="flex items-center gap-3">
             <Brain className="w-10 h-10" />
             <div>
-              <h1 className="text-2xl font-bold">AI Strategy Quiz</h1>
-              <p className="text-sm text-purple-100">Testează-ți cunoștințele algoritmice</p>
+              <h1 className="text-2xl font-bold">SmarTest</h1>
             </div>
           </div>
           <div className="flex gap-6">
@@ -223,7 +222,7 @@ export default function QuestionApp() {
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
               >
-                {selectedAnswer ? 'Verifică răspunsul 🎯' : 'Selectează un răspuns'}
+                {selectedAnswer ? 'Verifică răspunsul 🎯' : 'Select an answear'}
               </button>
             ) : (
               <div className="space-y-4">
