@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import generator_api  # Șterge importul questions
+from .routers import generator_api, answer_api
 from .database import engine, Base
 
 Base.metadata.create_all(bind=engine)
@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 app.include_router(generator_api.router, prefix="/api", tags=["generator"])
-# app.include_router(questions.router, prefix="/api/questions", tags=["questions"])  # Comentează această linie
+app.include_router(answer_api.router, prefix="/api", tags=["answers"])
 
 @app.get("/")
 def read_root():
