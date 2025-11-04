@@ -3,7 +3,7 @@ import { AlertCircle, CheckCircle, XCircle, RefreshCw, Brain, Sparkles, Trophy, 
 
 export default function QuestionApp() {
   const [question, setQuestion] = useState(null);
-  const [loading, setLoading] = useState(false); // <--- MODIFICARE: Setat pe 'false' (nu încărcăm de la început)
+  const [loading, setLoading] = useState(false); // <--- MODIFICARE: Setat pe 'false' (nu incarcam de la inceput)
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [textAnswer, setTextAnswer] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -23,7 +23,7 @@ export default function QuestionApp() {
     setTextAnswer('');
     setSubmitted(false);
     setEvaluationResult(null);
-    setAnswerType(type); // seteaza tipul
+    setAnswerType(type);
     setQuestion(null);
 
     try {
@@ -117,7 +117,7 @@ export default function QuestionApp() {
           <Brain className="w-10 h-10" />
           <div>
             <h1 className="text-2xl font-bold">SmarTest AI</h1>
-            <p className="text-sm text-purple-100">Învață inteligent</p>
+            <p className="text-sm text-purple-100">Invata inteligent</p>
           </div>
         </div>
         <div className="flex gap-6">
@@ -129,7 +129,7 @@ export default function QuestionApp() {
           <div className="text-center bg-white/20 rounded-xl px-4 py-2">
             <Target className="w-6 h-6 mx-auto mb-1" />
             <p className="text-2xl font-bold">{totalQuestions}</p>
-            <p className="text-xs">Întrebări</p>
+            <p className="text-xs">Intrebari</p>
           </div>
         </div>
       </div>
@@ -145,8 +145,8 @@ export default function QuestionApp() {
             <Brain className="w-20 h-20 text-white mx-auto mb-6 animate-pulse" />
             <Sparkles className="w-8 h-8 text-yellow-300 absolute top-0 right-0 animate-bounce" />
           </div>
-          <p className="text-white text-xl font-semibold">Se generează întrebarea...</p>
-          <p className="text-purple-200 mt-2">Pregătește-te să gândești strategic!</p>
+          <p className="text-white text-xl font-semibold">Se genereaza intrebarea...</p>
+          <p className="text-purple-200 mt-2">Pregateste-te sa gandesti strategic!</p>
         </div>
       </div>
     );
@@ -161,11 +161,11 @@ export default function QuestionApp() {
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">Oops! Ceva nu a mers bine</h2>
           <p className="text-center text-gray-600 mb-6">{error}</p>
           <button
-            onClick={() => { setError(null); setQuestion(null); }} // <--- MODIFICARE: Butonul te duce la ecranul de start
+            onClick={() => { setError(null); setQuestion(null); }}
             className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all"
           >
             <RefreshCw className="w-5 h-5 inline mr-2" />
-            Mergi la început
+            Mergi la inceput
           </button>
         </div>
       </div>
@@ -180,8 +180,8 @@ export default function QuestionApp() {
 
 
         <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Alege tipul de întrebare</h2>
-          <p className="text-gray-600 mb-8">Ce fel de provocare dorești să primești?</p>
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Alege tipul de intrebare</h2>
+          <p className="text-gray-600 mb-8">Ce fel de provocare doresti sa primesti?</p>
           <div className="flex flex-col md:flex-row gap-6">
             <button
               onClick={() => setAnswerType('multiple')}
@@ -190,8 +190,8 @@ export default function QuestionApp() {
               }`}
             >
               <ListChecks className="w-12 h-12 mx-auto text-purple-600 mb-3" />
-              <h3 className="text-xl font-semibold text-gray-800">Răspuns Multiplu</h3>
-              <p className="text-gray-500">Alege varianta corectă.</p>
+              <h3 className="text-xl font-semibold text-gray-800">Raspuns Multiplu</h3>
+              <p className="text-gray-500">Alege varianta corecta.</p>
             </button>
             <button
               onClick={() => setAnswerType('text')}
@@ -200,15 +200,15 @@ export default function QuestionApp() {
               }`}
             >
               <Type className="w-12 h-12 mx-auto text-blue-600 mb-3" />
-              <h3 className="text-xl font-semibold text-gray-800">Răspuns Text</h3>
-              <p className="text-gray-500">Formulează propriul răspuns.</p>
+              <h3 className="text-xl font-semibold text-gray-800">Raspuns Text</h3>
+              <p className="text-gray-500">Formuleaza propriul raspuns.</p>
             </button>
           </div>
           <button
             onClick={() => fetchQuestion(answerType)}
             className="w-full md:w-auto mt-10 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-12 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg text-lg"
           >
-            Generează Întrebarea
+            Genereaza Intrebarea
           </button>
         </div>
       </div>
@@ -221,12 +221,10 @@ export default function QuestionApp() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 py-8 px-4">
-      {renderHeader()} {/* Folosim funcția header */}
+      {renderHeader()}
 
-      {/* Card principal */}
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-          {/* Header */}
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-8 text-white">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -237,7 +235,7 @@ export default function QuestionApp() {
                   </span>
                   <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
                     {isMultipleChoice ? <ListChecks className="w-4 h-4" /> : <Type className="w-4 h-4" />}
-                    {isMultipleChoice ? 'Alegere multiplă' : 'Răspuns text'}
+                    {isMultipleChoice ? 'Alegere multipla' : 'Raspuns text'}
                   </span>
                 </div>
                 <h2 className="text-3xl font-bold mb-2">{question.title}</h2>
@@ -246,23 +244,22 @@ export default function QuestionApp() {
             </div>
           </div>
 
-          {/* Conținut */}
           <div className="p-8">
             <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6 mb-8 border-l-4 border-purple-600">
               <p className="text-gray-800 text-lg leading-relaxed">{question.prompt}</p>
             </div>
 
-            {/* Răspunsuri - Alegere multiplă */}
+            {/* Raspunsuri pt intrebarile cu raspuns multiplu */}
             {isMultipleChoice && question.options && (
               <div className="space-y-4 mb-8">
                 {question.options.map((option, index) => {
                   const isSelected = selectedAnswer === option;
                   const showResult = submitted && evaluationResult;
 
-                  // Logică de afișare a răspunsului corect
+                  // Afisarea raspunsului corect
                   let isThisCorrect = false;
                   if (showResult && evaluationResult.correct_answer === option) {
-                    isThisCorrect = true; // Acesta e răspunsul corect
+                    isThisCorrect = true;
                   }
 
                   let buttonStyle = 'bg-white border-2 border-gray-200 hover:border-purple-400 hover:shadow-lg';
@@ -271,11 +268,9 @@ export default function QuestionApp() {
                     buttonStyle = 'bg-gradient-to-r from-purple-100 to-blue-100 border-2 border-purple-500 shadow-lg scale-105';
                   }
                   if (showResult && isThisCorrect) {
-                    // Verde dacă e răspunsul corect (indiferent dacă e selectat)
                     buttonStyle = 'bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-500 shadow-lg';
                   }
                   if (showResult && isSelected && !isThisCorrect) {
-                    // Roșu doar dacă e selectat ȘI greșit
                     buttonStyle = 'bg-gradient-to-r from-red-100 to-pink-100 border-2 border-red-500 shadow-lg';
                   }
 
@@ -311,21 +306,20 @@ export default function QuestionApp() {
               </div>
             )}
 
-            {/* Răspuns text */}
+            {/* Raspuns text */}
             {!isMultipleChoice && (
               <div className="mb-8">
                 <textarea
                   value={textAnswer}
                   onChange={(e) => setTextAnswer(e.target.value)}
                   disabled={submitted}
-                  placeholder="Scrie răspunsul tău aici..."
+                  placeholder="Scrie raspunsul tau aici..."
                   className="w-full p-6 rounded-2xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none text-gray-800 text-lg resize-none disabled:bg-gray-100 disabled:cursor-not-allowed"
                   rows={6}
                 />
               </div>
             )}
 
-            {/* Butoane */}
             {!submitted ? (
               <button
                 onClick={handleSubmit}
@@ -336,7 +330,7 @@ export default function QuestionApp() {
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
               >
-                {submitting ? 'Se verifică...' : (isMultipleChoice ? (selectedAnswer ? 'Verifică răspunsul' : 'Selectează un răspuns') : (textAnswer.trim() ? 'Verifică răspunsul 🎯' : 'Scrie un răspuns'))}
+                {submitting ? 'Se verifica...' : (isMultipleChoice ? (selectedAnswer ? 'Verifica raspunsul' : 'Selecteaza un raspuns') : (textAnswer.trim() ? 'Verifica raspunsul 🎯' : 'Scrie un raspuns'))}
               </button>
             ) : (
               <div className="space-y-4">
@@ -364,7 +358,7 @@ export default function QuestionApp() {
                       ) : (
                         <>
                           <XCircle className="w-8 h-8 text-red-600 mr-3" />
-                          <span className="font-bold text-2xl text-gray-800">Încearcă din nou!</span>
+                          <span className="font-bold text-2xl text-gray-800">Incearca din nou!</span>
                         </>
                       )}
                       <span className="ml-auto text-3xl font-bold text-gray-800">
@@ -372,18 +366,17 @@ export default function QuestionApp() {
                       </span>
                     </div>
 
-                    {/* Detalii pentru răspuns text */}
                     {!isMultipleChoice && evaluationResult.details && (
                       <div className="bg-white/60 rounded-xl p-4 mb-3">
                         {evaluationResult.details.keywords_found && evaluationResult.details.keywords_found.length > 0 && (
                           <div className="mb-2">
-                            <p className="font-semibold text-green-700 mb-1">✓ Cuvinte cheie găsite:</p>
+                            <p className="font-semibold text-green-700 mb-1">✓ Cuvinte cheie gasite:</p>
                             <p className="text-gray-700">{evaluationResult.details.keywords_found.join(', ')}</p>
                           </div>
                         )}
                         {evaluationResult.details.keywords_missed && evaluationResult.details.keywords_missed.length > 0 && (
                           <div>
-                            <p className="font-semibold text-red-700 mb-1">✗ Cuvinte cheie lipsă:</p>
+                            <p className="font-semibold text-red-700 mb-1">✗ Cuvinte cheie lipsa:</p>
                             <p className="text-gray-700">{evaluationResult.details.keywords_missed.join(', ')}</p>
                           </div>
                         )}
@@ -391,7 +384,7 @@ export default function QuestionApp() {
                     )}
 
                     <div className="bg-white/60 rounded-xl p-4">
-                      <p className="font-semibold text-gray-800 mb-2">Soluție de referință:</p>
+                      <p className="font-semibold text-gray-800 mb-2">Solutie de referinta:</p>
                       <p className="text-gray-700 leading-relaxed">{evaluationResult.reference_solution}</p>
                     </div>
                   </div>
@@ -403,14 +396,14 @@ export default function QuestionApp() {
                     className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-xl flex items-center justify-center gap-2"
                   >
                     <ListChecks className="w-6 h-6" />
-                    Alegere multiplă
+                    Alegere multipla
                   </button>
                   <button
                     onClick={() => handleNewQuestion('text')}
                     className="flex-1 bg-gradient-to-r from-cyan-600 to-teal-600 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:from-cyan-700 hover:to-teal-700 transition-all transform hover:scale-105 shadow-xl flex items-center justify-center gap-2"
                   >
                     <Type className="w-6 h-6" />
-                    Răspuns text
+                    Raspuns text
                   </button>
                 </div>
               </div>

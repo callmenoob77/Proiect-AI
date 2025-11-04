@@ -122,12 +122,6 @@ MASTER_STRATEGIES = [
 
 
 def genereaza_intrebare_strategie(answer_type="multiple"):
-    """
-    Generează o întrebare despre strategii de rezolvare.
-
-    Args:
-        answer_type: "multiple" pentru alegere multiplă, "text" pentru răspuns liber
-    """
     problem_data = random.choice(PROBLEM_KNOWLEDGE)
 
     problem = problem_data["problem_name"]
@@ -137,7 +131,6 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
     instance = random.choice(problem_data["example_instances"])
 
     if answer_type == "multiple":
-        # Generare întrebare cu opțiuni multiple
         possible_distractors = [s for s in MASTER_STRATEGIES if s != correct_answer]
         distractors = random.sample(possible_distractors, min(3, len(possible_distractors)))
 
@@ -167,7 +160,6 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
         }
 
     elif answer_type == "text":
-        # Generare întrebare cu răspuns text (descriere strategie)
         strategy_data = random.choice(TEXT_KNOWLEDGE)
         strategy_name = strategy_data["strategy_name"]
         keywords = strategy_data["keywords"]
