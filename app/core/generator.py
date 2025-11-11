@@ -99,27 +99,23 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
     
     if answer_type == "multiple":
         
-        # 1. Alegem o "categorie" de problema din lista
         problem_data = random.choice(PROBLEM_KNOWLEDGE)
         
         problem_name = problem_data["problem_name"]
         enum_type = problem_data["enum_type"]
         chapter_name = problem_data["chapter_name"]
         
-        # 2. Initializam instanta si raspunsul corect (default)
-        instance = ""
+        instance = ""   #am implementat randomizare in instante
         correct_answer = problem_data["base_strategy"]
         if enum_type == "WATER_JUG":
             vas1 = random.randint(3, 5)
             vas2 = random.randint(vas1 + 1, 10)
             target = random.randint(1, vas2 - 1)
             
-            # Decidem aleatoriu daca problema are costuri uniforme sau nu
-            if random.choice([True, False]):
+            if random.choice([True, False]): #in functie de intrebare vom avea un raspuns diferit
                 instance = f"doua vase de {vas1}L si {vas2}L pentru a obtine {target}L (cost 1 per actiune)"
                 correct_answer = "Uniform Cost Search (sau BFS)"
             else:
-                # Costuri diferite
                 cost1 = random.randint(2, 4)
                 cost2 = random.randint(1, cost1 - 1)
                 instance = f"doua vase de {vas1}L (cost umplere {cost1}p) si {vas2}L (cost umplere {cost2}p) pentru a obtine {target}L"
@@ -159,7 +155,24 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
         else:
             instance = "o instanta generica"
             correct_answer = problem_data["base_strategy"]
-        exclude_list = [correct_answer, "Uniform Cost Search (sau BFS)", "DFS sau Hillclimbing", "Uniform Cost Search"]
+        
+        #am adaugat un criteriu in plus, unde verificam sa nu avem repetitii in cod
+        exclude_list = [correct_answer]
+
+        if "Backtracking" in correct_answer and correct_answer != "Backtracking":
+            exclude_list.append("Backtracking")
+        
+        if correct_answer == "Uniform Cost Search":
+            exclude_list.append("Uniform Cost Search (sau BFS)")
+        elif correct_answer == "Uniform Cost Search (sau BFS)":
+            exclude_list.append("Uniform Cost Search")
+
+        if correct_answer == "Backtracking cu euristica Warnsdorff":
+            exclude_list.append("DFS sau Hillclimbing")
+        elif correct_answer == "DFS sau Hillclimbing":
+             exclude_list.append("Backtracking cu euristica Warnsdorff")
+
+        
         possible_distractors = [s for s in MASTER_STRATEGIES if s not in exclude_list]
         
         num_distractors = min(3, len(possible_distractors))
@@ -180,14 +193,12 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
 
         options_string = ", ".join(options)
 
-        # 4. Generam prompt-ul dinamic
         intro = random.choice(PROMPT_INTROS).format(problem=problem_name, instance=instance)
         question_part = random.choice(PROMPT_QUESTIONS).format(options_string=options_string)
         prompt_text = f"{intro} {question_part}"
         
         title_text = f"Selectare strategie: {problem_name.replace('_', ' ').title()}"
 
-        # 5. Returnam dictionarul
         return {
             "title": title_text,
             "prompt": prompt_text,

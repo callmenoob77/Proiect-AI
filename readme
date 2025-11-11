@@ -20,3 +20,10 @@ ALTER TYPE question_type ADD VALUE 'RIVER_CROSSING';
 ALTER TYPE question_type ADD VALUE 'WATER_JUG';
 ALTER TYPE question_type ADD VALUE 'SLIDING_PUZZLE';
 ALTER TYPE question_type ADD VALUE 'X_O';
+
+
+//noi modificari de la jebz
+De instalat din Terminal pt functionalitatea nlp-ului:
+
+pip install spacy
+python -m spacy download ro_core_news_md
