@@ -1,50 +1,47 @@
-import re
 from typing import Dict, Any
+import spacy
 
+nlp = spacy.load("ro_core_news_md")
 
 def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str) -> Dict[str, Any]:
-    """
-    Evaluează un răspuns dat de utilizator pe baza răspunsului corect
-    stocat în baza de date.
-
-    Aceasta este logica "algoritmică" separată de frontend.
-    """
+    
     user_answer_normalized = user_answer.lower().strip()
 
-    # --- Cazul 1: Întrebare cu răspuns multiplu ---
-    if "answer" in correct_answer_json:
+    if "answer" in correct_answer_json and "reference_text" not in correct_answer_json:
         correct_answer_text = correct_answer_json["answer"].lower().strip()
         is_correct = user_answer_normalized == correct_answer_text
         score = 100.0 if is_correct else 0.0
-        details = {"match_type": "exact"}
+        details = {"match_type": "exact_multiple_choice"}
 
         return {"is_correct": is_correct, "score": score, "details": details}
 
-    # --- Cazul 2: Întrebare cu răspuns text (keywords) ---
-    elif "keywords" in correct_answer_json:
-        keywords = correct_answer_json.get("keywords", [])
-        if not keywords:
-            return {"is_correct": False, "score": 0.0, "details": {"error": "No keywords to evaluate against"}}
+    elif "reference_text" in correct_answer_json:
+        
+        reference_text = correct_answer_json["reference_text"]
 
-        matches = 0
-        details = {"keywords_found": [], "keywords_missed": []}
+        user_doc = nlp(user_answer)
+        reference_doc = nlp(reference_text)
+        semantic_score = 0.0
+        
+        if user_doc.has_vector and reference_doc.has_vector and user_doc.vector_norm and reference_doc.vector_norm:
+            semantic_score = user_doc.similarity(reference_doc)
+        
+        if len(user_doc) < 5: 
+            semantic_score *= 0.8
+            
+        final_score = semantic_score * 120.0
+        if final_score > 100:
+            final_score = 100
+        if final_score < 0:
+            final_score = 0
+        is_correct = final_score >= 70
 
-        for kw in keywords:
-            # Folosim regex pentru a găsi cuvântul ca atare (boundary)
-            if re.search(r'\b' + re.escape(kw.lower()) + r'\b', user_answer_normalized):
-                matches += 1
-                details["keywords_found"].append(kw)
-            else:
-                details["keywords_missed"].append(kw)
+        details = {
+            "match_type": "nlp_semantic_only",
+            "semantic_similarity_score": round(semantic_score, 4)
+        }
 
-        # Calculăm scorul bazat pe procentul de cuvinte cheie găsite
-        score = (matches / len(keywords)) * 100.0 if keywords else 0.0
-        # Considerăm "corect" dacă s-au găsit cel puțin 80% din cuvinte
-        is_correct = score >= 80.0
+        return {"is_correct": is_correct, "score": final_score, "details": details}
 
-        return {"is_correct": is_correct, "score": score, "details": details}
-
-    # --- Cazul 3: Necunoscut ---
     else:
-        return {"is_correct": False, "score": 0.0, "details": {"error": "Unknown correct_answer format"}}
-
+        return {"is_correct": False, "score": 0.0, "details": {"error": "Unknown correct_answer format (missing 'answer' or 'reference_text')"}}
