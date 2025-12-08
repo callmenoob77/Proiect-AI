@@ -1,0 +1,14 @@
+# Folderul de mediu virtual
+venv/
+
+# Fișiere cache ale Python
+__pycache__/
+
+# Setările locale VS Code
+.vscode/
+
+# Setarile locale PyCharm (am vazut ca ai folderul .idea in proiect)
+.idea/
+
+# Variabile de mediu si secrete (Vital pt securitate!)
+.env

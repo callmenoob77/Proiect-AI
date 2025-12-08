@@ -1,8 +1,0 @@
-# Folderul de mediu virtual
-venv/
-
-# Fișiere cache ale Python
-__pycache__/
-
-# Setările locale VS Code
-.vscode/

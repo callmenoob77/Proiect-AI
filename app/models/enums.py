@@ -14,6 +14,7 @@ class QuestionTypeEnum(enum.Enum):
     SLIDING_PUZZLE = 'SLIDING_PUZZLE'
     X_O = 'X_O'
     A_STAR_DESCRIPTION = 'A_STAR_DESCRIPTION'
+    CSP_PROBLEM = 'CSP_PROBLEM'
 
 class AnswerSourceEnum(enum.Enum):
     USER_UI = 'USER_UI'
