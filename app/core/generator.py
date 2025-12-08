@@ -7,6 +7,13 @@ except ImportError:
     genereaza_problema_csp = None
     print("ATENTIE: Nu am gasit fisierul csp_generator.py!")
 
+try:
+    from .minimax_generator import genereaza_intrebare_minimax
+except ImportError:
+    genereaza_intrebare_minimax = None
+    print("ATENTIE:Nu am gasit fisierul minimax_generator.py!")
+
+
 
 PROBLEM_KNOWLEDGE = [
     {"problem_name": "Generalized Hanoi Towers", "base_strategy": "DFS (Depth-First Search)", "chapter_name": "Strategii algoritmice", "enum_type": "HANOI"},
@@ -71,8 +78,11 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
     
     if answer_type == "multiple":
         
-        if genereaza_problema_csp and random.random() < 0.5:
+        if genereaza_problema_csp and random.random() < 0.33:
              return genereaza_problema_csp()
+        
+        if genereaza_intrebare_minimax and random.random()<0.33:
+            return genereaza_intrebare_minimax(answer_type="multiple")
              
         problem_data = random.choice(PROBLEM_KNOWLEDGE)
         problem_name = problem_data["problem_name"]

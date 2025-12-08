@@ -4,6 +4,7 @@ from ..database import get_db
 from ..core.generator import genereaza_intrebare_strategie
 from .. import models, schemas
 
+
 router = APIRouter()
 
 

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, CheckCircle, XCircle, RefreshCw, Brain, Sparkles, Trophy, Target, Type, ListChecks } from 'lucide-react';
+import { AlertCircle, CheckCircle, XCircle, RefreshCw, Brain, Sparkles, Trophy, Target, Type, ListChecks,GitBranch } from 'lucide-react';
+import TreeVisualizer from './components/TreeVisualizer';
+
 
 export default function QuestionApp() {
   const [question, setQuestion] = useState(null);
@@ -251,6 +253,15 @@ export default function QuestionApp() {
             <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6 mb-8 border-l-4 border-purple-600">
               <p className="text-gray-800 text-lg leading-relaxed">{question.prompt}</p>
             </div>
+
+           
+
+            {question.question_type === "MINIMAX_TREE" && (
+     <>
+      {console.log("ARBOR MINIMAX:", question.problem_instance.tree)}
+      <TreeVisualizer tree={question.problem_instance.tree} />
+    </>
+  )}
 
             {/* Răspunsuri - Alegere multiplă */}
             {isMultipleChoice && question.options && (
