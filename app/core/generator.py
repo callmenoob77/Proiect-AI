@@ -189,14 +189,27 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
             "options": options
         }
 
+
     elif answer_type == "text":
+
+        if genereaza_problema_csp and random.random() < 0.5:
+            csp_question = genereaza_problema_csp()
+
+            csp_question["answer_type"] = "text"
+            return csp_question
+
         strategy_data = random.choice(TEXT_KNOWLEDGE)
         strategy_name = strategy_data["strategy_name"]
         keywords = strategy_data["keywords"]
         description = strategy_data["description"]
         chapter_name = strategy_data["chapter_name"]
 
-        prompt_text = f"Descrie pe scurt strategia {strategy_name} si mentioneaza principalele caracteristici ale acesteia."
+        prompt_text = (
+
+            f"Descrie pe scurt strategia {strategy_name} si mentioneaza "
+            f"principalele caracteristici ale acesteia."
+
+        )
         title_text = f"Descriere strategie: {strategy_name}"
 
         return {
@@ -210,6 +223,7 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
             "chapter_name": chapter_name,
             "answer_type": "text"
         }
+
 
     else:
         raise ValueError(f"Tip de raspuns necunoscut: {answer_type}")

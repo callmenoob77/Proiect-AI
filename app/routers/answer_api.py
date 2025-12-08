@@ -42,7 +42,7 @@ def submit_answer(
         raise HTTPException(status_code=500, detail="Întrebarea nu are un răspuns corect definit.")
 
     # Apelează algoritmul de evaluare
-    evaluation_result = evaluate_answer(correct_answer_json, submission.user_answer)
+    evaluation_result = evaluate_answer(correct_answer_json, submission.user_answer,question.question_type )
 
     # 4. Salvează rezultatul evaluării în tabela 'evaluation'
     new_evaluation = models.Evaluation(
