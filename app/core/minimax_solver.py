@@ -3,10 +3,6 @@ from typing import Dict, Any, List, Tuple
 
 
 class MinMaxSolver:
-    """
-    Solver pentru MinMax cu optimizarea Alpha-Beta.
-    Poate fi folosit atât în generator, cât și în evaluator.
-    """
 
     def __init__(self, tree: Dict[str, Any]):
         """
@@ -18,9 +14,7 @@ class MinMaxSolver:
         self.tree = tree
         self.visited_leaves = 0
 
-    # ---------------------------------------------------------
-    # ALPHA-BETA
-    # ---------------------------------------------------------
+    
     def alphabeta(self, node: Dict[str, Any],
                   alpha: float,
                   beta: float,
@@ -55,9 +49,6 @@ class MinMaxSolver:
                     break  # Tăiere alfa
             return value
 
-    # ---------------------------------------------------------
-    # API PRINCIPAL
-    # ---------------------------------------------------------
     def solve(self) -> Tuple[int, int]:
         """
         Returnează:

@@ -15,6 +15,7 @@ def normalize_text(text: str) -> str:
 
 def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, question_type: str) -> Dict[str, Any]:
     user_answer_norm = user_answer.lower().replace(" ", "").strip()
+    
     if question_type == "MINIMAX_TREE":
         # PRIORITATE: folosim câmpurile numerice directe
         correct_root = correct_answer_json.get("root_value")

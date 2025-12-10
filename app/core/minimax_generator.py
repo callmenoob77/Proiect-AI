@@ -50,9 +50,6 @@ def _gen_random_tree(max_depth: int, current_depth: int = 0) -> Dict[str, Any]:
 
 
 def genereaza_intrebare_minimax(answer_type: str = "multiple") -> Dict[str, Any]:
-    """
-    Generează o întrebare minimax cu arbori MICI (4-10 frunze).
-    """
     
     # RESTRICȚIE PRINCIPALĂ: adâncime doar 2-3, preferabil 2
     max_depth = random.choices([2, 3], weights=[70, 30])[0]  # 70% șansă pentru adâncime 2
