@@ -3,24 +3,31 @@ import spacy
 import re 
 import unicodedata
 
+#model folosit pentru similaritate semantica
 nlp = spacy.load("ro_core_news_md")
 
 def normalize_text(text: str) -> str:
-    """Elimină diacritice și normalizează textul"""
+    """elimina diacritice, normalizeaza textul"""
     text = ''.join(
         c for c in unicodedata.normalize('NFD', text)
         if unicodedata.category(c) != 'Mn'
     )
     return text.lower()
 
+
 def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, question_type: str) -> Dict[str, Any]:
+    """
+    Evalueaza rapsunsul in functie de tipul intrebarii
+    """
+    #normalizare
     user_answer_norm = user_answer.lower().replace(" ", "").strip()
+
+    #intrebare de tip minmax
     if question_type == "MINIMAX_TREE":
-        # PRIORITATE: folosim câmpurile numerice directe
+        #valorile corecte
         correct_root = correct_answer_json.get("root_value")
         correct_leaves = correct_answer_json.get("visited_leaves")
-        
-        # FALLBACK: extragem din reference_text
+
         if correct_root is None or correct_leaves is None:
             if "reference_text" not in correct_answer_json:
                 return {
@@ -41,23 +48,25 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                     "score": 0.0,
                     "details": {"error": "invalid_reference_format"}
                 }
-            
+
         # Extragem nr din raspunsul studentului
         user_nums = re.findall(r"\d+", user_answer)
+        #versiune normalizata a raspunsului
         user_answer_lower = user_answer.lower()
         user_answer_normalized = normalize_text(user_answer)
         
-        # Cuvinte cheie NORMALIZATE (fără diacritice)
+        # Cuvinte cheie
         root_keywords = [
-            "radacin", "root",
+            "radacina", "root",
             "valoare", "maxim", "minim", "max", "min",
             "rezultat", "scor"
         ]
         leaves_keywords = [
-            "frunz", "leaf", "leaves",
+            "frunza","frunze", "leaf", "leaves",
             "noduri", "nod final", "terminal", "vizitate"
         ]
-        
+
+        #daca utilizatorul nu a scirs niciun numar -> raspuns imposibil de evaluat
         if len(user_nums) == 0:
             return {
                 "is_correct": False,
@@ -69,7 +78,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                 }
             }
         
-        # Împărțim textul în propoziții
+        #impart textul în propoziții
         sentences = re.split(r'[.!?;]', user_answer_lower)
         sentences_normalized = [normalize_text(s) for s in sentences]
         
@@ -80,7 +89,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
             """
             for i, sentence_norm in enumerate(sentences_normalized):
                 if num_str in sentence_norm:
-                    # Verificăm dacă această propoziție conține cuvinte cheie (în versiunea normalizată)
+                    #verific propozitia conține cuvinte cheie
                     has_root = any(kw in sentence_norm for kw in root_keywords)
                     has_leaves = any(kw in sentence_norm for kw in leaves_keywords)
                     
@@ -92,7 +101,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                         return (None, sentences[i].strip())
             return (None, "")
         
-        # Construim maparea număr -> context
+        #construiesc maparea numar -> context
         number_contexts = {}
         for num_str in user_nums:
             context_type, sentence = find_number_with_context(num_str)
@@ -101,11 +110,12 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                 "sentence": sentence
             }
         
-        # Cazul cu 1 număr
+        # Cazul cu 1 numar
         if len(user_nums) == 1:
             user_val = int(user_nums[0])
             ctx = number_contexts[user_val]
-            
+
+            #nr reprezina radacina si e corect-> 50%
             if ctx["type"] == "root" and user_val == correct_root:
                 return {
                     "is_correct": False,
@@ -116,6 +126,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                         "got": {"root": user_val, "leaves": None}
                     }
                 }
+            #nr reprezinta frunza si e corect -> 50%
             elif ctx["type"] == "leaves" and user_val == correct_leaves:
                 return {
                     "is_correct": False,
@@ -126,6 +137,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                         "got": {"root": None, "leaves": user_val}
                     }
                 }
+            #nr corect dar context ambiguu -> 40%
             elif user_val in [correct_root, correct_leaves]:
                 return {
                     "is_correct": False,
@@ -137,6 +149,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                         "message": "Un număr corect, dar nu este clar dacă este rădăcina sau frunzele"
                     }
                 }
+            #nr gresit -> 0%
             else:
                 return {
                     "is_correct": False,
@@ -148,18 +161,19 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                     }
                 }
         
-        # Cazul cu 2 numere - logică îmbunătățită
+        # Cazul cu 2 numere
         elif len(user_nums) == 2:
             u1 = int(user_nums[0])
             u2 = int(user_nums[1])
-            
+
+            #contextele fiecarui numar
             ctx1 = number_contexts.get(u1, {})
             ctx2 = number_contexts.get(u2, {})
             
             type1 = ctx1.get("type")
             type2 = ctx2.get("type")
             
-            # Identificăm ce număr corespunde la ce
+            #identific ce număr corespunde la ce
             identified_root = None
             identified_leaves = None
             
@@ -174,6 +188,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
             
             # CAZUL 1: Ambele identificate clar
             if identified_root is not None and identified_leaves is not None:
+                #corect 100%
                 if identified_root == correct_root and identified_leaves == correct_leaves:
                     return {
                         "is_correct": True,
@@ -184,6 +199,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                             "got": {"root": identified_root, "leaves": identified_leaves}
                         }
                     }
+                #nr identificate corect dar inversate 70%
                 elif identified_root == correct_leaves and identified_leaves == correct_root:
                     return {
                         "is_correct": False,
@@ -195,6 +211,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                             "message": "Numerele sunt corecte, dar rădăcina și frunzele sunt inversate"
                         }
                     }
+                #complet gresit
                 else:
                     return {
                         "is_correct": False,
@@ -221,6 +238,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                                 "message": "Rădăcina este etichetată corect, celălalt număr este corect dar neetichetat"
                             }
                         }
+                    #doar root e corect -> 50%
                     else:
                         return {
                             "is_correct": False,
@@ -231,6 +249,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                                 "got": {"root": identified_root, "leaves": None}
                             }
                         }
+                    #radacina identificata gresit
                 else:
                     return {
                         "is_correct": False,
@@ -241,7 +260,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                             "got": {"root": identified_root, "leaves": None}
                         }
                     }
-            
+            #doar frunzele sunt identificate
             elif identified_leaves is not None and identified_root is None:
                 if identified_leaves == correct_leaves:
                     other_num = u2 if identified_leaves == u1 else u1
@@ -277,8 +296,9 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                         }
                     }
             
-            # CAZUL 3: Niciunul identificat - dar verificăm numerele
+            # CAZUL 3: Niciunul identificat
             else:
+                #daca utilizatorul scrie fix cele 2 numere ->75%
                 if {u1, u2} == {correct_root, correct_leaves}:
                     return {
                         "is_correct": True,
@@ -290,6 +310,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                             "message": "Numerele sunt corecte, dar nu sunt etichetate clar"
                         }
                     }
+                #altfel 0%
                 else:
                     return {
                         "is_correct": False,
@@ -301,11 +322,12 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                         }
                     }
         
-        # Cazul cu 3+ numere - mai inteligent
+        # Cazul cu 3+ numere
         else:
             potential_root = None
             potential_leaves = None
-            
+
+            #cautam daca macar un numar apare in context corect
             for num_str in user_nums:
                 num = int(num_str)
                 ctx = number_contexts.get(num, {})
@@ -314,7 +336,8 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                     potential_root = num
                 elif ctx.get("type") == "leaves" and num in [correct_root, correct_leaves]:
                     potential_leaves = num
-            
+
+            #daca ambele sunt identificate corect
             if potential_root is not None and potential_leaves is not None:
                 if potential_root == correct_root and potential_leaves == correct_leaves:
                     return {
@@ -363,6 +386,8 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
             "details": {"match_type": "exact_multiple_choice"}
         }
 
+
+    #evaluare semantica
     if "reference_text" in correct_answer_json:
         reference_text = correct_answer_json["reference_text"]
         user_doc = nlp(user_answer)
