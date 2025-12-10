@@ -192,6 +192,10 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
 
     elif answer_type == "text":
 
+        if genereaza_intrebare_minimax and random.random() < 0.3:
+         return genereaza_intrebare_minimax(answer_type="text")
+
+
         if genereaza_problema_csp and random.random() < 0.5:
             csp_question = genereaza_problema_csp()
 
