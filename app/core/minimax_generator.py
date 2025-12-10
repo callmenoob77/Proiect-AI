@@ -4,8 +4,10 @@ from .minimax_solver import MinMaxSolver
 
 
 def count_leaves(node: Dict[str, Any]) -> int:
-    """Numără frunzele din arbore"""
-    if "value" in node:
+    """Numara frunzele din arbore
+        Un nod e considerat frunza daca are campul "value"
+    """
+    if "value" in node: #este frunza
         return 1
     children = node.get("children", [])
     return sum(count_leaves(child) for child in children)
@@ -13,30 +15,37 @@ def count_leaves(node: Dict[str, Any]) -> int:
 
 def _gen_random_tree(max_depth: int, current_depth: int = 0) -> Dict[str, Any]:
     """
-    Generează recursiv un arbore de joc MIN/MAX MIC și compact.
+    Genereaza recursiv un arbore MIN/MAX
+    - Frunzele apar la adancime maxima sau aleator
+    - Nodurile altereaza intre MAX(nivel par) si MIN(impar)
+    - Nr copii:
+        - radacina poate avea 3 copii
+        - toate celelalte noduri 2 copii
+    - frunzele primesc valori radnom intre 1 si 20
     """
-    
-    # Adâncime maximă absolută
+
+    #daca am atins adancimea max-> generez frunza
     if current_depth >= max_depth:
         return {
             "id": f"leaf_{random.randint(1000, 9999)}",
             "value": random.randint(1, 20)
         }
-    
-    # Șansă MARE de oprire anticipată pentru arbori mici
-    early_stop_chance = 0.3 * current_depth  # 0%, 30%, 60%
+
+    #previn generarea arborilor mari
+    early_stop_chance = 0.3 * current_depth
     if current_depth >= 1 and random.random() < early_stop_chance:
         return {
             "id": f"leaf_{random.randint(1000, 9999)}",
             "value": random.randint(1, 20)
         }
     
-    # RESTRICȚIE STRICTĂ: doar 2 copii pe nod (ocazional 3 la rădăcină)
-    if current_depth == 0 and random.random() < 0.3:  # 30% șansă pentru 3 copii la rădăcină
+    #doar 2 copii pe nod (poate 3 la radacina)
+    if current_depth == 0 and random.random() < 0.3:
         num_children = 3
     else:
-        num_children = 2  # Toate celelalte noduri: doar 2 copii
-    
+        num_children = 2  #Toate celelalte noduri: doar 2 copii
+
+    #determin tipul nodului in functie de nivel
     node_type = "MAX" if current_depth % 2 == 0 else "MIN"
     
     return {
@@ -50,6 +59,9 @@ def _gen_random_tree(max_depth: int, current_depth: int = 0) -> Dict[str, Any]:
 
 
 def genereaza_intrebare_minimax(answer_type: str = "multiple") -> Dict[str, Any]:
+    """
+    Generează o întrebare minimax cu arbori MICI (4-10 frunze).
+    """
     
     # RESTRICȚIE PRINCIPALĂ: adâncime doar 2-3, preferabil 2
     max_depth = random.choices([2, 3], weights=[70, 30])[0]  # 70% șansă pentru adâncime 2
@@ -62,18 +74,16 @@ def genereaza_intrebare_minimax(answer_type: str = "multiple") -> Dict[str, Any]
     for attempt in range(max_attempts):
         tree = _gen_random_tree(max_depth)
         leaf_count = count_leaves(tree)
-        
-        # ACCEPTĂM doar arbori cu 4-10 frunze (IDEAL pentru vizualizare)
+
+        #accept doar arbori cu frunze intre 4 si 10
         if 4 <= leaf_count <= 10:
             break
-        
-        # Dacă arborele e prea mare, scădem adâncimea
+
+        #daca arborele e prea mare, scad adancimea
         if leaf_count > 10:
             max_depth = 2
-        
-        # La ultima încercare, forțăm un arbore simplu
+
         if attempt == max_attempts - 1:
-            # Arbore minimalist: adâncime 2, doar 2 copii
             tree = {
                 "id": "root",
                 "type": "MAX",
@@ -103,19 +113,20 @@ def genereaza_intrebare_minimax(answer_type: str = "multiple") -> Dict[str, Any]
     root_value, visited_leaves = solver.solve()
     
     root_type = tree.get("type", "MAX")
-    
+
+    #Solutia de referinta
     reference_solution = (
-        f"Aplicând MinMax cu optimizarea Alpha-Beta pe arborele dat, cu rădăcina de tip {root_type}, "
-        f"se obține valoarea {root_value} în rădăcină. "
-        f"În timpul parcurgerii, au fost vizitate {visited_leaves} noduri frunză, "
-        f"restul fiind eliminate prin tăieri Alpha-Beta."
+        f"Aplicand MinMax cu optimizarea Alpha-Beta pe arborele dat, cu rădăcina de tip {root_type}, "
+        f"se obține valoarea {root_value} în radacina. "
+        f"In timpul parcurgerii, au fost vizitate {visited_leaves} noduri frunza, "
+        f"restul fiind eliminate prin taieri Alpha-Beta."
     )
     
     prompt = (
         "Pentru arborele de joc dat (nodurile alternează între MAX și MIN), "
-        "determină valoarea din rădăcină și numărul de noduri frunză vizitate "
+        "determina valoarea din radacina și numarul de noduri frunza vizitate "
         "de algoritmul MinMax cu optimizarea Alpha-Beta. "
-        "Arborele este reprezentat vizual în interfață."
+        "Arborele este reprezentat vizual în interfața."
     )
     
     # VARIANTA TEXT
@@ -149,23 +160,25 @@ def genereaza_intrebare_minimax(answer_type: str = "multiple") -> Dict[str, Any]
         }
     
     # VARIANTA MULTIPLE CHOICE
-    correct_str = f"Valoare rădăcină = {root_value}, frunze vizitate = {visited_leaves}"
+    correct_str = f"Valoare radacina = {root_value}, frunze vizitate = {visited_leaves}"
     
     options = [correct_str]
     used_pairs = {(root_value, visited_leaves)}
-    
+
+    #generare variante gresite dar plauzibile
     def add_distractor(dv: int, dl: int):
         v = root_value + dv
-        l = max(1, visited_leaves + dl)
+        l = max(1, visited_leaves + dl) #nr frunze nu poate fi 0
         pair = (v, l)
         if pair not in used_pairs:
             used_pairs.add(pair)
-            options.append(f"Valoare rădăcină = {v}, frunze vizitate = {l}")
+            options.append(f"Valoare radacina = {v}, frunze vizitate = {l}")
     
     add_distractor(1, 0)
     add_distractor(-1, 1)
     add_distractor(0, 2)
-    
+
+    #completam pana avem 4 optuni
     while len(options) < 4:
         dv = random.randint(-3, 3)
         dl = random.randint(-2, 3)
