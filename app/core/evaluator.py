@@ -363,19 +363,39 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
 
     if question_type == "CSP_PROBLEM":
         correct_raw = correct_answer_json.get("answer", "").lower().replace(" ", "")
-
-        if correct_raw and correct_raw in user_answer_norm:
+        
+        # Extrage valorile din răspunsul corect (elimină acolade și spații)
+        correct_clean = correct_raw.replace("{", "").replace("}", "").replace(" ", "")
+        
+        # Normalizează răspunsul utilizatorului (elimină acolade și spații)
+        user_clean = user_answer_norm.replace("{", "").replace("}", "")
+        
+        # Verifică dacă răspunsul utilizatorului conține exact aceleași valori
+        # Acceptă atât "{1,3}" cât și "1,3" sau "1, 3"
+        if correct_clean and (correct_clean in user_clean or correct_raw in user_answer_norm):
             return {
                 "is_correct": True,
                 "score": 100.0,
-                "details": {"match_type": "csp_contains", "expected": correct_raw}
+                "details": {"match_type": "csp_flexible", "expected": correct_raw, "user_provided": user_clean}
             }
-        else:
-            return {
-                "is_correct": False,
-                "score": 0.0,
-                "details": {"match_type": "csp_contains", "expected": correct_raw}
-            }
+        
+        # Verificare inversă pentru ordine diferită (ex: "3,1" vs "1,3")
+        if correct_clean and len(correct_clean) > 0:
+            correct_values = sorted(correct_clean.split(","))
+            user_values = sorted([v.strip() for v in user_clean.split(",") if v.strip()])
+            
+            if correct_values == user_values:
+                return {
+                    "is_correct": True,
+                    "score": 100.0,
+                    "details": {"match_type": "csp_unordered", "expected": correct_raw, "user_provided": user_clean}
+                }
+        
+        return {
+            "is_correct": False,
+            "score": 0.0,
+            "details": {"match_type": "csp_mismatch", "expected": correct_raw, "user_provided": user_clean}
+        }
 
     if question_type == "GAME_MATRIX":
         has_nash = correct_answer_json.get("has_nash", True)
@@ -445,23 +465,51 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
         }
 
 
-    #evaluare semantica
+    #evaluare semantica pentru raspunsuri text
     if "reference_text" in correct_answer_json:
         reference_text = correct_answer_json["reference_text"]
         user_doc = nlp(user_answer)
         ref_doc = nlp(reference_text)
 
+        # Similaritate semantică
         semantic_score = 0.0
         if user_doc.has_vector and ref_doc.has_vector:
             semantic_score = user_doc.similarity(ref_doc)
 
-        final_score = max(0, min(100, semantic_score * 120))
+        # Evaluare pe bază de keywords dacă există
+        keyword_score = 0.0
+        if "keywords" in correct_answer_json:
+            keywords = correct_answer_json["keywords"]
+            if keywords:
+                user_answer_normalized = normalize_text(user_answer)
+                matched_keywords = 0
+                
+                for keyword in keywords:
+                    keyword_norm = normalize_text(keyword)
+                    # Match exact sau ca parte din cuvânt
+                    if keyword_norm in user_answer_normalized:
+                        matched_keywords += 1
+                
+                # Scor bazat pe procentul de keywords găsite
+                keyword_score = matched_keywords / len(keywords) if len(keywords) > 0 else 0.0
+        
+        # Combinăm scorurile: 60% semantic + 40% keywords (dacă există)
+        if keyword_score > 0:
+            combined_score = (semantic_score * 0.6) + (keyword_score * 0.4)
+        else:
+            combined_score = semantic_score
+        
+        # Scalare la 100
+        final_score = max(0, min(100, combined_score * 100))
+        
         return {
-            "is_correct": final_score >= 70,
+            "is_correct": final_score >= 60,  # Pragul pentru corect
             "score": final_score,
             "details": {
-                "match_type": "semantic_similarity",
-                "semantic_similarity_score": round(semantic_score, 4)
+                "match_type": "text_evaluation",
+                "semantic_similarity_score": round(semantic_score, 4),
+                "keyword_match_score": round(keyword_score, 4) if keyword_score > 0 else None,
+                "combined_score": round(combined_score, 4)
             }
         }
 

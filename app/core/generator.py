@@ -188,9 +188,8 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
             if extra not in options:
                 options.append(extra)
 
-        options_string = ", ".join(options)
         intro = random.choice(PROMPT_INTROS).format(problem=problem_name, instance=instance)
-        question_part = random.choice(PROMPT_QUESTIONS).format(options_string=options_string)
+        question_part = random.choice(PROMPT_QUESTIONS)
         prompt_text = f"{intro} {question_part}"
         title_text = f"Selectare strategie: {problem_name.replace('_', ' ').title()}"
 

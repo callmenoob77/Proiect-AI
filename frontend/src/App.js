@@ -20,13 +20,17 @@ export default function QuestionApp() {
   const [patternType, setPatternType] = useState('THEORY');
   const [patternInputs, setPatternInputs] = useState({});
   const [showTestMode, setShowTestMode] = useState(false);
+  const [validationError, setValidationError] = useState(null);
+  const [selectedMode, setSelectedMode] = useState('question'); // 'question' sau 'test'
+  const [cspPatternId, setCspPatternId] = useState('FC'); // State pentru tipul de CSP
 
   const API_BASE_URL = 'http://localhost:8000';
   const defaultPatternByType = {
     THEORY: 'DESCRIPTION',
     STRATEGY: 'GENERIC',
-    CSP: 'FC',
+    CSP: cspPatternId, // Folosim state-ul
     MINIMAX: 'BASIC',
+    NASH: 'BASIC',
   };
 
   const fetchQuestion = async (type) => {
@@ -64,15 +68,81 @@ export default function QuestionApp() {
     }
   };
 
-  const submitCustomQuestion = async () => {
+  const submitCustomQuestion = async (keepInputs = false) => {
     if (!patternType) return;
 
-    const needsInputs = patternType !== 'MINIMAX';
-    if (needsInputs && Object.keys(patternInputs).length === 0) return
+    const needsInputs = patternType !== 'MINIMAX' && patternType !== 'NASH';
+    
+    // Validare câmpuri - verifică că toate valorile sunt completate
+    if (needsInputs) {
+      const emptyFields = [];
+      
+      if (patternType === 'THEORY') {
+        if (!patternInputs.strategy_name || patternInputs.strategy_name.trim() === '') {
+          emptyFields.push('Nume strategie');
+        }
+      } else if (patternType === 'STRATEGY') {
+        if (!patternInputs.problem_name || patternInputs.problem_name.trim() === '') {
+          emptyFields.push('Nume problemă');
+        }
+        if (!patternInputs.instance || patternInputs.instance.trim() === '') {
+          emptyFields.push('Instanță');
+        }
+      } else if (patternType === 'CSP') {
+        // Validare diferită în funcție de tipul de CSP
+        if (cspPatternId === 'FC') {
+          if (!patternInputs.var1 || patternInputs.var1.trim() === '') {
+            emptyFields.push('Variabila 1');
+          }
+          if (!patternInputs.var2 || patternInputs.var2.trim() === '') {
+            emptyFields.push('Variabila 2');
+          }
+          if (!patternInputs.domains || patternInputs.domains.trim() === '') {
+            emptyFields.push('Domenii');
+          }
+          if (!patternInputs.assigned_value || patternInputs.assigned_value.trim() === '') {
+            emptyFields.push('Valoare asignată');
+          }
+        } else if (cspPatternId === 'MRV') {
+          if (!patternInputs.variables || patternInputs.variables.trim() === '') {
+            emptyFields.push('Variabile');
+          }
+          if (!patternInputs.domains || patternInputs.domains.trim() === '') {
+            emptyFields.push('Domenii');
+          }
+        } else if (cspPatternId === 'AC3') {
+          if (!patternInputs.var1 || patternInputs.var1.trim() === '') {
+            emptyFields.push('Variabila 1');
+          }
+          if (!patternInputs.var2 || patternInputs.var2.trim() === '') {
+            emptyFields.push('Variabila 2');
+          }
+          if (!patternInputs.domain1 || patternInputs.domain1.trim() === '') {
+            emptyFields.push('Domeniu 1');
+          }
+          if (!patternInputs.domain2 || patternInputs.domain2.trim() === '') {
+            emptyFields.push('Domeniu 2');
+          }
+          if (!patternInputs.constraint || patternInputs.constraint.trim() === '') {
+            emptyFields.push('Constrângere');
+          }
+        }
+      }
+      
+      if (emptyFields.length > 0) {
+        setValidationError(`Te rugăm să completezi toate câmpurile: ${emptyFields.join(', ')}`);
+        return;
+      }
+    }
 
     setLoading(true);
     setError(null);
+    setValidationError(null);
     setQuestion(null);
+    setSubmitted(false);
+    setEvaluationResult(null);
+    setSelectedAnswer(null);
+    setTextAnswer('');
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/custom-question/ask`, {
@@ -93,7 +163,11 @@ export default function QuestionApp() {
 
       const data = await response.json();
       setQuestion(data);
-      setPatternInputs({});
+      
+      // Nu resetăm inputs când generăm întrebare nouă de același tip
+      if (!keepInputs) {
+        setPatternInputs({});
+      }
 
     } catch (err) {
       setError(err.message);
@@ -155,7 +229,24 @@ export default function QuestionApp() {
 
   const handleNewQuestion = (type) => {
     setShowTestMode(false);
-    fetchQuestion(type);
+    if (customMode) {
+      // În modul pattern, generăm o nouă întrebare pe același pattern
+      // păstrăm inputs pentru a putea regenera
+      submitCustomQuestion(true);
+    } else {
+      // În modul normal, generăm întrebare obișnuită
+      fetchQuestion(type);
+    }
+  };
+
+  const handleChangePatternType = () => {
+    // Resetează la pagina de setup pattern
+    setQuestion(null);
+    setSubmitted(false);
+    setEvaluationResult(null);
+    setSelectedAnswer(null);
+    setTextAnswer('');
+    setPatternInputs({});
   };
 
   const renderHeader = () => (
@@ -168,7 +259,31 @@ export default function QuestionApp() {
             <p className="text-sm text-purple-100">Învață inteligent</p>
           </div>
         </div>
-        <div className="flex gap-6">
+        <div className="flex items-center gap-6">
+          {customMode && question && (
+            <button
+              onClick={handleChangePatternType}
+              className="bg-white/20 hover:bg-white/30 rounded-xl px-4 py-2 transition-all flex items-center gap-2"
+            >
+              <RefreshCw className="w-5 h-5" />
+              <span className="text-sm font-semibold">Schimbă tip</span>
+            </button>
+          )}
+          {!customMode && question && (
+            <button
+              onClick={() => {
+                setQuestion(null);
+                setSubmitted(false);
+                setSelectedAnswer(null);
+                setTextAnswer('');
+                setEvaluationResult(null);
+              }}
+              className="bg-white/20 hover:bg-white/30 rounded-xl px-4 py-2 transition-all flex items-center gap-2"
+            >
+              <RefreshCw className="w-5 h-5" />
+              <span className="text-sm font-semibold">Pagina principală</span>
+            </button>
+          )}
           <div className="text-center bg-white/20 rounded-xl px-4 py-2">
             <Trophy className="w-6 h-6 mx-auto mb-1" />
             <p className="text-2xl font-bold">{score}</p>
@@ -263,6 +378,7 @@ export default function QuestionApp() {
                 onChange={(e) => {
                   setPatternType(e.target.value);
                   setPatternInputs({});
+                  setValidationError(null);
                 }}
                 className="p-4 rounded-xl border-2 border-gray-300 mb-6 w-full"
               >
@@ -270,6 +386,7 @@ export default function QuestionApp() {
                 <option value="STRATEGY">Strategie</option>
                 <option value="CSP">CSP</option>
                 <option value="MINIMAX">Minimax</option>
+                <option value="NASH">Nash Equilibrium</option>
               </select>
 
               {patternType === 'THEORY' && (
@@ -312,38 +429,121 @@ export default function QuestionApp() {
 
               {patternType === 'CSP' && (
                 <>
-                  <input
-                    type="text"
-                    placeholder="Variabila 1 (ex: X)"
-                    className="w-full p-4 rounded-xl border-2 border-gray-300 mb-3"
-                    onChange={(e) =>
-                      setPatternInputs(prev => ({ ...prev, var1: e.target.value }))
-                    }
-                  />
-                  <input
-                    type="text"
-                    placeholder="Variabila 2 (ex: Y)"
-                    className="w-full p-4 rounded-xl border-2 border-gray-300 mb-3"
-                    onChange={(e) =>
-                      setPatternInputs(prev => ({ ...prev, var2: e.target.value }))
-                    }
-                  />
-                  <input
-                    type="text"
-                    placeholder="Domenii (ex: {1,2,3})"
-                    className="w-full p-4 rounded-xl border-2 border-gray-300 mb-3"
-                    onChange={(e) =>
-                      setPatternInputs(prev => ({ ...prev, domains: e.target.value }))
-                    }
-                  />
-                  <input
-                    type="text"
-                    placeholder="Valoare asignată (ex: 1)"
-                    className="w-full p-4 rounded-xl border-2 border-gray-300 mb-6"
-                    onChange={(e) =>
-                      setPatternInputs(prev => ({ ...prev, assigned_value: e.target.value }))
-                    }
-                  />
+                  <select
+                    className="w-full p-4 rounded-xl border-2 border-purple-300 mb-4 bg-white font-medium text-gray-700"
+                    value={cspPatternId}
+                    onChange={(e) => {
+                      setCspPatternId(e.target.value);
+                      setPatternInputs({}); // Reset inputs când se schimbă tipul
+                    }}
+                  >
+                    <option value="FC">Forward Checking (FC)</option>
+                    <option value="MRV">Minimum Remaining Values (MRV)</option>
+                    <option value="AC3">Arc Consistency (AC-3)</option>
+                  </select>
+
+                  {cspPatternId === 'FC' && (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Variabila 1 (ex: X)"
+                        className="w-full p-4 rounded-xl border-2 border-gray-300 mb-3"
+                        onChange={(e) =>
+                          setPatternInputs(prev => ({ ...prev, var1: e.target.value }))
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Variabila 2 (ex: Y)"
+                        className="w-full p-4 rounded-xl border-2 border-gray-300 mb-3"
+                        onChange={(e) =>
+                          setPatternInputs(prev => ({ ...prev, var2: e.target.value }))
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Domenii (ex: {1,2,3})"
+                        className="w-full p-4 rounded-xl border-2 border-gray-300 mb-3"
+                        onChange={(e) =>
+                          setPatternInputs(prev => ({ ...prev, domains: e.target.value }))
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Valoare asignată (ex: 2)"
+                        className="w-full p-4 rounded-xl border-2 border-gray-300 mb-6"
+                        onChange={(e) =>
+                          setPatternInputs(prev => ({ ...prev, assigned_value: e.target.value }))
+                        }
+                      />
+                    </>
+                  )}
+
+                  {cspPatternId === 'MRV' && (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Variabile (ex: X, Y, Z)"
+                        className="w-full p-4 rounded-xl border-2 border-gray-300 mb-3"
+                        onChange={(e) =>
+                          setPatternInputs(prev => ({ ...prev, variables: e.target.value }))
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Domenii (ex: D(X)={1,2}, D(Y)={3}, D(Z)={1,2,3,4})"
+                        className="w-full p-4 rounded-xl border-2 border-gray-300 mb-6"
+                        onChange={(e) =>
+                          setPatternInputs(prev => ({ ...prev, domains: e.target.value }))
+                        }
+                      />
+                    </>
+                  )}
+
+                  {cspPatternId === 'AC3' && (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Variabila 1 (ex: X)"
+                        className="w-full p-4 rounded-xl border-2 border-gray-300 mb-3"
+                        onChange={(e) =>
+                          setPatternInputs(prev => ({ ...prev, var1: e.target.value }))
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Variabila 2 (ex: Y)"
+                        className="w-full p-4 rounded-xl border-2 border-gray-300 mb-3"
+                        onChange={(e) =>
+                          setPatternInputs(prev => ({ ...prev, var2: e.target.value }))
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Domeniu 1 (ex: {1,2,3})"
+                        className="w-full p-4 rounded-xl border-2 border-gray-300 mb-3"
+                        onChange={(e) =>
+                          setPatternInputs(prev => ({ ...prev, domain1: e.target.value }))
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Domeniu 2 (ex: {2,3,4})"
+                        className="w-full p-4 rounded-xl border-2 border-gray-300 mb-3"
+                        onChange={(e) =>
+                          setPatternInputs(prev => ({ ...prev, domain2: e.target.value }))
+                        }
+                      />
+                      <input
+                        type="text"
+                        placeholder="Constrângere (ex: !=, <, >, ==)"
+                        className="w-full p-4 rounded-xl border-2 border-gray-300 mb-6"
+                        onChange={(e) =>
+                          setPatternInputs(prev => ({ ...prev, constraint: e.target.value }))
+                        }
+                      />
+                    </>
+                  )}
                 </>
               )}
 
@@ -362,16 +562,16 @@ export default function QuestionApp() {
                 <option value="text">Răspuns text</option>
               </select>
 
+              {validationError && (
+                <div className="bg-red-100 border-2 border-red-400 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5" />
+                  <span>{validationError}</span>
+                </div>
+              )}
+
               <button
                 onClick={submitCustomQuestion}
-                disabled={
-                  Object.keys(patternInputs).length === 0 &&
-                  patternType !== 'MINIMAX'
-                }
-                className={`w-full py-4 px-8 rounded-xl font-bold text-lg transition-all transform ${Object.keys(patternInputs).length > 0 || patternType === 'MINIMAX'
-                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:scale-105'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
+                className="w-full py-4 px-8 rounded-xl font-bold text-lg transition-all transform bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:scale-105"
               >
                 Generează întrebarea
               </button>
@@ -387,11 +587,15 @@ export default function QuestionApp() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <button
-                  onClick={() => setAnswerType('multiple')}
-                  className={`p-6 border-4 rounded-2xl transition-all ${answerType === 'multiple'
-                    ? 'border-purple-400 bg-purple-50'
-                    : 'hover:border-purple-400 hover:bg-purple-50'
-                    }`}
+                  onClick={() => {
+                    setAnswerType('multiple');
+                    setSelectedMode('question');
+                  }}
+                  className={`p-6 border-4 rounded-2xl transition-all ${
+                    answerType === 'multiple' && selectedMode === 'question'
+                      ? 'border-purple-500 bg-purple-50' 
+                      : 'border-gray-200 hover:border-purple-400 hover:bg-purple-50'
+                  }`}
                 >
                   <ListChecks className="w-12 h-12 mx-auto text-purple-600 mb-3" />
                   <p className="font-bold text-gray-800">Răspuns Multiplu</p>
@@ -399,11 +603,15 @@ export default function QuestionApp() {
                 </button>
 
                 <button
-                  onClick={() => setAnswerType('text')}
-                  className={`p-6 border-4 rounded-2xl transition-all ${answerType === 'text'
-                    ? 'border-blue-400 bg-blue-50'
-                    : 'hover:border-blue-400 hover:bg-blue-50'
-                    }`}
+                  onClick={() => {
+                    setAnswerType('text');
+                    setSelectedMode('question');
+                  }}
+                  className={`p-6 border-4 rounded-2xl transition-all ${
+                    answerType === 'text' && selectedMode === 'question'
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-gray-200 hover:border-blue-400 hover:bg-blue-50'
+                  }`}
                 >
                   <Type className="w-12 h-12 mx-auto text-blue-600 mb-3" />
                   <p className="font-bold text-gray-800">Răspuns Text</p>
@@ -411,8 +619,12 @@ export default function QuestionApp() {
                 </button>
 
                 <button
-                  onClick={() => setShowTestMode(true)}
-                  className="p-6 border-4 rounded-2xl hover:border-green-400 hover:bg-green-50 transition-all"
+                  onClick={() => setSelectedMode('test')}
+                  className={`p-6 border-4 rounded-2xl transition-all ${
+                    selectedMode === 'test'
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200 hover:border-green-400 hover:bg-green-50'
+                  }`}
                 >
                   <BookOpen className="w-12 h-12 mx-auto text-green-600 mb-3" />
                   <p className="font-bold text-gray-800">Creează Test</p>
@@ -421,10 +633,16 @@ export default function QuestionApp() {
               </div>
 
               <button
-                onClick={() => fetchQuestion(answerType)}
+                onClick={() => {
+                  if (selectedMode === 'test') {
+                    setShowTestMode(true);
+                  } else {
+                    fetchQuestion(answerType);
+                  }
+                }}
                 className="mt-10 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-12 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-xl"
               >
-                Generează întrebarea
+                {selectedMode === 'test' ? 'Generează test' : 'Generează întrebare'}
               </button>
             </>
           )}
@@ -613,20 +831,32 @@ export default function QuestionApp() {
                 )}
 
                 <div className="flex gap-4">
-                  <button
-                    onClick={() => handleNewQuestion('multiple')}
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-xl flex items-center justify-center gap-2"
-                  >
-                    <ListChecks className="w-6 h-6" />
-                    Alegere multiplă
-                  </button>
-                  <button
-                    onClick={() => handleNewQuestion('text')}
-                    className="flex-1 bg-gradient-to-r from-cyan-600 to-teal-600 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:from-cyan-700 hover:to-teal-700 transition-all transform hover:scale-105 shadow-xl flex items-center justify-center gap-2"
-                  >
-                    <Type className="w-6 h-6" />
-                    Răspuns text
-                  </button>
+                  {customMode ? (
+                    <button
+                      onClick={() => handleNewQuestion(answerType)}
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-xl flex items-center justify-center gap-2"
+                    >
+                      <RefreshCw className="w-6 h-6" />
+                      Întrebare nouă ({patternType})
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleNewQuestion('multiple')}
+                        className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-xl flex items-center justify-center gap-2"
+                      >
+                        <ListChecks className="w-6 h-6" />
+                        Alegere multiplă
+                      </button>
+                      <button
+                        onClick={() => handleNewQuestion('text')}
+                        className="flex-1 bg-gradient-to-r from-cyan-600 to-teal-600 text-white py-4 px-6 rounded-2xl font-bold text-lg hover:from-cyan-700 hover:to-teal-700 transition-all transform hover:scale-105 shadow-xl flex items-center justify-center gap-2"
+                      >
+                        <Type className="w-6 h-6" />
+                        Răspuns text
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             )}

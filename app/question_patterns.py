@@ -7,6 +7,24 @@ QUESTION_PATTERNS = {
                 "si mentioneaza principalele caracteristici ale acesteia."
             ),
             "inputs": ["strategy_name"]
+        },
+        "CHARACTERISTICS": {
+            "template": (
+                "Care dintre urmatoarele afirmatii descrie cel mai bine strategia {strategy_name}?"
+            ),
+            "inputs": ["strategy_name"]
+        },
+        "USAGE": {
+            "template": (
+                "In ce situatii este recomandat sa folosesti {strategy_name}?"
+            ),
+            "inputs": ["strategy_name"]
+        },
+        "COMPLEXITY": {
+            "template": (
+                "Care este complexitatea temporala/spatiala a strategiei {strategy_name}?"
+            ),
+            "inputs": ["strategy_name"]
         }
     },
 
@@ -56,6 +74,17 @@ QUESTION_PATTERNS = {
                 "ce valori raman in domeniul lui {var1} dupa AC-3?"
             ),
             "inputs": ["var1", "var2", "domain1", "domain2", "constraint"]
+        }
+    },
+
+    "NASH": {
+        "BASIC": {
+            "template": (
+                "Pentru jocul cu doi jucatori dat in forma normala, "
+                "unde Jucatorul 1 alege randul iar Jucatorul 2 alege coloana, "
+                "exista echilibru Nash pur? Daca da, care este acesta?"
+            ),
+            "inputs": []
         }
     }
 }
