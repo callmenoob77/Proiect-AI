@@ -13,6 +13,12 @@ except ImportError:
     genereaza_intrebare_minimax = None
     print("ATENTIE:Nu am gasit fisierul minimax_generator.py!")
 
+try:
+    from .nash_generator import genereaza_intrebare_nash
+except ImportError:
+    genereaza_intrebare_nash = None
+    print("ATENTIE: Nu am gasit fisierul nash_generator.py!")
+
 
 
 PROBLEM_KNOWLEDGE = [
@@ -78,11 +84,23 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
     
     if answer_type == "multiple":
         
-        if genereaza_problema_csp and random.random() < 0.33:
-             return genereaza_problema_csp()
+        # Selectie uniforma intre tipurile disponibile
+        available_types = ["strategy"]  # mereu disponibil
+        if genereaza_problema_csp:
+            available_types.append("csp")
+        if genereaza_intrebare_minimax:
+            available_types.append("minimax")
+        if genereaza_intrebare_nash:
+            available_types.append("nash")
         
-        if genereaza_intrebare_minimax and random.random()<0.33:
+        selected_type = random.choice(available_types)
+        
+        if selected_type == "csp":
+            return genereaza_problema_csp()
+        elif selected_type == "minimax":
             return genereaza_intrebare_minimax(answer_type="multiple")
+        elif selected_type == "nash":
+            return genereaza_intrebare_nash(answer_type="multiple")
              
         problem_data = random.choice(PROBLEM_KNOWLEDGE)
         problem_name = problem_data["problem_name"]
@@ -192,15 +210,26 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
 
     elif answer_type == "text":
 
-        if genereaza_intrebare_minimax and random.random() < 0.3:
-         return genereaza_intrebare_minimax(answer_type="text")
-
-
-        if genereaza_problema_csp and random.random() < 0.5:
+        # Selectie uniforma intre tipurile disponibile
+        available_types = ["strategy"]  # mereu disponibil
+        if genereaza_intrebare_minimax:
+            available_types.append("minimax")
+        if genereaza_intrebare_nash:
+            available_types.append("nash")
+        if genereaza_problema_csp:
+            available_types.append("csp")
+        
+        selected_type = random.choice(available_types)
+        
+        if selected_type == "minimax":
+            return genereaza_intrebare_minimax(answer_type="text")
+        elif selected_type == "nash":
+            return genereaza_intrebare_nash(answer_type="text")
+        elif selected_type == "csp":
             csp_question = genereaza_problema_csp()
-
             csp_question["answer_type"] = "text"
             return csp_question
+        # else: fallback la strategy (continua mai jos)
 
         strategy_data = random.choice(TEXT_KNOWLEDGE)
         strategy_name = strategy_data["strategy_name"]

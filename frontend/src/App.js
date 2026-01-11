@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, CheckCircle, XCircle, RefreshCw, Brain, Sparkles, Trophy, Target, Type, ListChecks, GitBranch, BookOpen } from 'lucide-react';
 import TreeVisualizer from './components/TreeVisualizer';
+import GameMatrixVisualizer from './components/GameMatrixVisualizer';
 import TestMode from './components/TestMode';
 
 export default function QuestionApp() {
@@ -232,18 +233,16 @@ export default function QuestionApp() {
           <div className="flex justify-center gap-4 mb-8">
             <button
               onClick={() => setCustomMode(false)}
-              className={`px-6 py-2 rounded-xl font-semibold transition ${
-                !customMode ? 'bg-purple-600 text-white' : 'bg-gray-200'
-              }`}
+              className={`px-6 py-2 rounded-xl font-semibold transition ${!customMode ? 'bg-purple-600 text-white' : 'bg-gray-200'
+                }`}
             >
               Întrebare generată
             </button>
 
             <button
               onClick={() => setCustomMode(true)}
-              className={`px-6 py-2 rounded-xl font-semibold transition ${
-                customMode ? 'bg-blue-600 text-white' : 'bg-gray-200'
-              }`}
+              className={`px-6 py-2 rounded-xl font-semibold transition ${customMode ? 'bg-blue-600 text-white' : 'bg-gray-200'
+                }`}
             >
               Întrebare pe pattern
             </button>
@@ -369,11 +368,10 @@ export default function QuestionApp() {
                   Object.keys(patternInputs).length === 0 &&
                   patternType !== 'MINIMAX'
                 }
-                className={`w-full py-4 px-8 rounded-xl font-bold text-lg transition-all transform ${
-                  Object.keys(patternInputs).length > 0 || patternType === 'MINIMAX'
-                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:scale-105'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                }`}
+                className={`w-full py-4 px-8 rounded-xl font-bold text-lg transition-all transform ${Object.keys(patternInputs).length > 0 || patternType === 'MINIMAX'
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:scale-105'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  }`}
               >
                 Generează întrebarea
               </button>
@@ -390,7 +388,10 @@ export default function QuestionApp() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <button
                   onClick={() => setAnswerType('multiple')}
-                  className="p-6 border-4 rounded-2xl hover:border-purple-400 hover:bg-purple-50 transition-all"
+                  className={`p-6 border-4 rounded-2xl transition-all ${answerType === 'multiple'
+                    ? 'border-purple-400 bg-purple-50'
+                    : 'hover:border-purple-400 hover:bg-purple-50'
+                    }`}
                 >
                   <ListChecks className="w-12 h-12 mx-auto text-purple-600 mb-3" />
                   <p className="font-bold text-gray-800">Răspuns Multiplu</p>
@@ -399,7 +400,10 @@ export default function QuestionApp() {
 
                 <button
                   onClick={() => setAnswerType('text')}
-                  className="p-6 border-4 rounded-2xl hover:border-blue-400 hover:bg-blue-50 transition-all"
+                  className={`p-6 border-4 rounded-2xl transition-all ${answerType === 'text'
+                    ? 'border-blue-400 bg-blue-50'
+                    : 'hover:border-blue-400 hover:bg-blue-50'
+                    }`}
                 >
                   <Type className="w-12 h-12 mx-auto text-blue-600 mb-3" />
                   <p className="font-bold text-gray-800">Răspuns Text</p>
@@ -408,10 +412,10 @@ export default function QuestionApp() {
 
                 <button
                   onClick={() => setShowTestMode(true)}
-                  className="p-6 border-4 rounded-2xl border-green-400 hover:bg-green-50 transition-all"
+                  className="p-6 border-4 rounded-2xl hover:border-green-400 hover:bg-green-50 transition-all"
                 >
                   <BookOpen className="w-12 h-12 mx-auto text-green-600 mb-3" />
-                  <p className="font-bold text-gray-800">Crează Test</p>
+                  <p className="font-bold text-gray-800">Creează Test</p>
                   <p className="text-sm text-gray-600 mt-2">Multiple întrebări</p>
                 </button>
               </div>
@@ -468,6 +472,12 @@ export default function QuestionApp() {
               </div>
             )}
 
+            {question.question_type === "GAME_MATRIX" && question.problem_instance?.matrix && (
+              <div className="mb-8">
+                <GameMatrixVisualizer matrix={question.problem_instance.matrix} />
+              </div>
+            )}
+
             {isMultipleChoice && question.options && (
               <div className="space-y-4 mb-8">
                 {question.options.map((option, index) => {
@@ -495,18 +505,16 @@ export default function QuestionApp() {
                       key={index}
                       onClick={() => !submitted && setSelectedAnswer(option)}
                       disabled={submitted}
-                      className={`w-full text-left p-5 rounded-2xl transition-all duration-300 transform ${buttonStyle} ${
-                        submitted ? 'cursor-default' : 'cursor-pointer hover:scale-102'
-                      } flex items-center justify-between`}
+                      className={`w-full text-left p-5 rounded-2xl transition-all duration-300 transform ${buttonStyle} ${submitted ? 'cursor-default' : 'cursor-pointer hover:scale-102'
+                        } flex items-center justify-between`}
                     >
                       <div className="flex items-center gap-4">
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
-                            (isSelected && !submitted) ? 'bg-purple-600 text-white' :
-                              (showResult && isThisCorrect) ? 'bg-green-600 text-white' :
-                                (showResult && isSelected && !isThisCorrect) ? 'bg-red-600 text-white' :
-                                  'bg-gray-100 text-gray-600'
-                          }`}>
+                          className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${(isSelected && !submitted) ? 'bg-purple-600 text-white' :
+                            (showResult && isThisCorrect) ? 'bg-green-600 text-white' :
+                              (showResult && isSelected && !isThisCorrect) ? 'bg-red-600 text-white' :
+                                'bg-gray-100 text-gray-600'
+                            }`}>
                           {String.fromCharCode(65 + index)}
                         </div>
                         <span className="font-medium text-gray-800 text-lg">{option}</span>
@@ -540,11 +548,10 @@ export default function QuestionApp() {
               <button
                 onClick={handleSubmit}
                 disabled={submitting || (isMultipleChoice ? !selectedAnswer : !textAnswer.trim())}
-                className={`w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all transform ${
-                  (isMultipleChoice ? selectedAnswer : textAnswer.trim()) && !submitting
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-xl hover:shadow-2xl hover:scale-105'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                }`}
+                className={`w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all transform ${(isMultipleChoice ? selectedAnswer : textAnswer.trim()) && !submitting
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-xl hover:shadow-2xl hover:scale-105'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  }`}
               >
                 {submitting ? 'Se verifică...' : (isMultipleChoice ? (selectedAnswer ? 'Verifică răspunsul' : 'Selectează un răspuns') : (textAnswer.trim() ? 'Verifică răspunsul 🎯' : 'Scrie un răspuns'))}
               </button>
@@ -552,13 +559,12 @@ export default function QuestionApp() {
               <div className="space-y-4">
                 {evaluationResult && (
                   <div
-                    className={`p-6 rounded-2xl border-2 ${
-                      evaluationResult.is_correct
-                        ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-400'
-                        : evaluationResult.score >= 50
-                          ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-400'
-                          : 'bg-gradient-to-r from-red-50 to-pink-50 border-red-400'
-                    }`}
+                    className={`p-6 rounded-2xl border-2 ${evaluationResult.is_correct
+                      ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-400'
+                      : evaluationResult.score >= 50
+                        ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-400'
+                        : 'bg-gradient-to-r from-red-50 to-pink-50 border-red-400'
+                      }`}
                   >
                     <div className="flex items-center mb-3">
                       {evaluationResult.is_correct ? (

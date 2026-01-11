@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle, XCircle, AlertCircle, Trophy, Clock, BookOpen, ArrowRight, Home } from 'lucide-react';
 import TreeVisualizer from './TreeVisualizer';
+import GameMatrixVisualizer from './GameMatrixVisualizer';
 
 export default function TestMode({ onBackToHome, apiBaseUrl }) {
   const [testState, setTestState] = useState('setup'); // setup, taking, results
@@ -173,6 +174,13 @@ export default function TestMode({ onBackToHome, apiBaseUrl }) {
               </div>
             )}
 
+            {/* Game Matrix Visualizer for NASH */}
+            {currentQuestion.question_type === "GAME_MATRIX" && currentQuestion.problem_instance?.matrix && (
+              <div className="mb-6">
+                <GameMatrixVisualizer matrix={currentQuestion.problem_instance.matrix} />
+              </div>
+            )}
+
             {/* Options */}
             <div className="space-y-4 mb-6">
               {currentQuestion.options.map((option, index) => {
@@ -181,17 +189,15 @@ export default function TestMode({ onBackToHome, apiBaseUrl }) {
                   <button
                     key={index}
                     onClick={() => selectAnswer(currentQuestion.id, option)}
-                    className={`w-full text-left p-5 rounded-2xl transition-all duration-300 transform hover:scale-102 ${
-                      isSelected
+                    className={`w-full text-left p-5 rounded-2xl transition-all duration-300 transform hover:scale-102 ${isSelected
                         ? 'bg-gradient-to-r from-purple-100 to-blue-100 border-2 border-purple-500 shadow-lg scale-105'
                         : 'bg-white border-2 border-gray-200 hover:border-purple-400 hover:shadow-lg'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-4">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
-                          isSelected ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
-                        }`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${isSelected ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
+                          }`}
                       >
                         {String.fromCharCode(65 + index)}
                       </div>
@@ -244,13 +250,12 @@ export default function TestMode({ onBackToHome, apiBaseUrl }) {
                   <button
                     key={q.id}
                     onClick={() => goToQuestion(index)}
-                    className={`w-12 h-12 rounded-lg font-bold transition-all ${
-                      isCurrent
+                    className={`w-12 h-12 rounded-lg font-bold transition-all ${isCurrent
                         ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white scale-110 shadow-lg'
                         : isAnswered
-                        ? 'bg-green-100 text-green-700 border-2 border-green-400'
-                        : 'bg-gray-100 text-gray-600 border-2 border-gray-300'
-                    }`}
+                          ? 'bg-green-100 text-green-700 border-2 border-green-400'
+                          : 'bg-gray-100 text-gray-600 border-2 border-gray-300'
+                      }`}
                   >
                     {index + 1}
                   </button>
@@ -326,9 +331,8 @@ export default function TestMode({ onBackToHome, apiBaseUrl }) {
                         <h3 className="text-xl font-bold text-gray-800">
                           Întrebarea {index + 1}
                         </h3>
-                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          isCorrect ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'
-                        }`}>
+                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${isCorrect ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'
+                          }`}>
                           {Math.round(result.score)}%
                         </span>
                       </div>

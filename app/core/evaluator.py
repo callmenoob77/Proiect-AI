@@ -377,6 +377,64 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                 "details": {"match_type": "csp_contains", "expected": correct_raw}
             }
 
+    if question_type == "GAME_MATRIX":
+        has_nash = correct_answer_json.get("has_nash", True)
+        correct_text = correct_answer_json.get("answer", "") or correct_answer_json.get("answer_text", "")
+        correct_text_norm = normalize_text(correct_text).replace(" ", "")
+        
+        no_nash_keywords = ["nuexista", "nuare", "noexiste", "fara", "nimic"]
+        user_says_no_nash = any(kw in user_answer_norm for kw in no_nash_keywords)
+        
+        if not has_nash and user_says_no_nash:
+            return {
+                "is_correct": True,
+                "score": 100.0,
+                "details": {"match_type": "nash_no_equilibrium_correct"}
+            }
+        
+        if has_nash and user_says_no_nash:
+            return {
+                "is_correct": False,
+                "score": 0.0,
+                "details": {"match_type": "nash_wrong_no_equilibrium", "expected": correct_text}
+            }
+        
+        if not has_nash and not user_says_no_nash:
+            return {
+                "is_correct": False,
+                "score": 0.0,
+                "details": {"match_type": "nash_wrong_cell_given", "expected": "Nu există echilibru Nash pur"}
+            }
+        
+        if correct_text_norm and correct_text_norm in user_answer_norm:
+            return {
+                "is_correct": True,
+                "score": 100.0,
+                "details": {"match_type": "nash_exact_match", "expected": correct_text}
+            }
+        
+        # Verificare partiala prin strategii
+        nash_equilibria = correct_answer_json.get("nash_equilibria", [])
+        row_names = ["sus", "jos", "mijloc"]
+        col_names = ["stanga", "dreapta", "centru"]
+        
+        for eq in nash_equilibria:
+            if eq[0] < len(row_names) and eq[1] < len(col_names):
+                row_name = row_names[eq[0]]
+                col_name = col_names[eq[1]]
+                if row_name in user_answer_norm and col_name in user_answer_norm:
+                    return {
+                        "is_correct": True,
+                        "score": 100.0,
+                        "details": {"match_type": "nash_strategy_match", "expected": correct_text}
+                    }
+        
+        return {
+            "is_correct": False,
+            "score": 0.0,
+            "details": {"match_type": "nash_no_match", "expected": correct_text}
+        }
+
     if "answer" in correct_answer_json and "reference_text" not in correct_answer_json:
         correct_answer_text = correct_answer_json["answer"].lower().strip()
         is_correct = user_answer_norm == correct_answer_text.replace(" ", "")
