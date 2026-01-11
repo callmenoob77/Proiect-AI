@@ -16,9 +16,13 @@ def handle_generate_strategy_question(
     """
     Generează o întrebare de tip strategie.
     Acceptă answer_type: "multiple" sau "text"
+    Acceptă chapter_filter: None sau numele capitolului pentru filtrare
     """
     try:
-        question_data = genereaza_intrebare_strategie(answer_type=request.answer_type)
+        question_data = genereaza_intrebare_strategie(
+            answer_type=request.answer_type,
+            chapter_filter=request.chapter_filter
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -55,7 +59,8 @@ def handle_generate_strategy_question(
         "problem_instance": new_question.problem_instance,
         "reference_solution": new_question.reference_solution,
         "answer_type": answer_type,
-        "protected": new_question.protected
+        "protected": new_question.protected,
+        "chapter_name": chapter_name
     }
 
     # Adaugă opțiunile doar pentru întrebări multiple

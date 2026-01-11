@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, CheckCircle, XCircle, RefreshCw, Brain, Sparkles, Trophy, Target, Type, ListChecks, GitBranch, BookOpen } from 'lucide-react';
+import { AlertCircle, CheckCircle, XCircle, RefreshCw, Brain, Sparkles, Trophy, Target, Type, ListChecks, BookOpen } from 'lucide-react';
 import TreeVisualizer from './components/TreeVisualizer';
 import GameMatrixVisualizer from './components/GameMatrixVisualizer';
 import TestMode from './components/TestMode';
@@ -23,6 +23,7 @@ export default function QuestionApp() {
   const [validationError, setValidationError] = useState(null);
   const [selectedMode, setSelectedMode] = useState('question'); // 'question' sau 'test'
   const [cspPatternId, setCspPatternId] = useState('FC'); // State pentru tipul de CSP
+  const [selectedChapter, setSelectedChapter] = useState('all'); // State pentru capitol selectat
 
   const API_BASE_URL = 'http://localhost:8000';
   const defaultPatternByType = {
@@ -44,14 +45,19 @@ export default function QuestionApp() {
     setQuestion(null);
 
     try {
+      const requestBody = {
+        answer_type: type
+      };
+      if (selectedChapter !== 'all') {
+        requestBody.chapter_filter = selectedChapter;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/generate/strategy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          answer_type: type
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
@@ -585,6 +591,25 @@ export default function QuestionApp() {
                 Ce fel de provocare dorești să primești?
               </p>
 
+              {/* SELECTOR CAPITOL */}
+              {selectedMode === 'question' && (
+                <div className="mb-8">
+                  <label className="block text-left text-gray-700 font-semibold mb-3">
+                    Alege capitolul:
+                  </label>
+                  <select
+                    value={selectedChapter}
+                    onChange={(e) => setSelectedChapter(e.target.value)}
+                    className="w-full p-4 rounded-xl border-2 border-purple-300 bg-white font-medium text-gray-700 hover:border-purple-500 transition-colors"
+                  >
+                    <option value="all">Toate capitolele</option>
+                    <option value="Strategii algoritmice">Strategii algoritmice</option>
+                    <option value="Algoritmi de cautare si CSP">Algoritmi de căutare și CSP</option>
+                    <option value="Teoria Jocurilor">Teoria Jocurilor</option>
+                  </select>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <button
                   onClick={() => {
@@ -652,7 +677,6 @@ export default function QuestionApp() {
   }
 
   const isMultipleChoice = question.answer_type === 'multiple';
-  const showCorrectAnswer = !question.protected;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 py-8 px-4">
@@ -663,11 +687,16 @@ export default function QuestionApp() {
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-8 text-white">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
                   <Sparkles className="w-6 h-6" />
                   <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
                     Nivel {question.difficulty}
                   </span>
+                  {question.chapter_name && (
+                    <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+                      📚 {question.chapter_name}
+                    </span>
+                  )}
                   <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
                     {isMultipleChoice ? <ListChecks className="w-4 h-4" /> : <Type className="w-4 h-4" />}
                     {isMultipleChoice ? 'Alegere multiplă' : 'Răspuns text'}

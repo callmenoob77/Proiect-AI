@@ -8,6 +8,7 @@ class GenerationRequest(BaseModel):
     Trimis de frontend.
     """
     answer_type: str = Field(default="multiple", description="Tipul răspunsului: 'multiple' sau 'text'")
+    chapter_filter: Optional[str] = Field(default=None, description="Filtru pentru capitol specific")
 
 class AnswerSubmission(BaseModel):
     """

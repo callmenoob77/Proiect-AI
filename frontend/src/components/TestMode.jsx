@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, AlertCircle, Trophy, Clock, BookOpen, ArrowRight, Home } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Trophy, Clock, BookOpen, Home } from 'lucide-react';
 import TreeVisualizer from './TreeVisualizer';
 import GameMatrixVisualizer from './GameMatrixVisualizer';
 

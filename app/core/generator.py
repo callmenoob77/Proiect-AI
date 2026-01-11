@@ -80,18 +80,34 @@ PROMPT_QUESTIONS = [
     "identifica strategia de baza pentru aceasta problema din optiunile: {options_string}."
 ]
 
-def genereaza_intrebare_strategie(answer_type="multiple"):
+def genereaza_intrebare_strategie(answer_type="multiple", chapter_filter=None):
     
     if answer_type == "multiple":
         
         # Selectie uniforma intre tipurile disponibile
         available_types = ["strategy"]  # mereu disponibil
-        if genereaza_problema_csp:
-            available_types.append("csp")
-        if genereaza_intrebare_minimax:
-            available_types.append("minimax")
-        if genereaza_intrebare_nash:
-            available_types.append("nash")
+        
+        # Filtrare în funcție de capitol
+        if chapter_filter:
+            if chapter_filter == "Teoria Jocurilor":
+                # Doar Nash pentru Teoria Jocurilor
+                if genereaza_intrebare_nash:
+                    return genereaza_intrebare_nash(answer_type="multiple")
+            elif chapter_filter == "Algoritmi de cautare si CSP":
+                # CSP și Minimax pentru acest capitol
+                if genereaza_problema_csp:
+                    available_types.append("csp")
+                if genereaza_intrebare_minimax:
+                    available_types.append("minimax")
+            # Pentru "Strategii algoritmice" rămâne doar "strategy"
+        else:
+            # Fără filtru - toate tipurile
+            if genereaza_problema_csp:
+                available_types.append("csp")
+            if genereaza_intrebare_minimax:
+                available_types.append("minimax")
+            if genereaza_intrebare_nash:
+                available_types.append("nash")
         
         selected_type = random.choice(available_types)
         
@@ -102,7 +118,14 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
         elif selected_type == "nash":
             return genereaza_intrebare_nash(answer_type="multiple")
              
-        problem_data = random.choice(PROBLEM_KNOWLEDGE)
+        # Pentru strategy, filtrăm problemele după capitol dacă e necesar
+        problems = PROBLEM_KNOWLEDGE
+        if chapter_filter and chapter_filter != "Teoria Jocurilor":
+            problems = [p for p in PROBLEM_KNOWLEDGE if p["chapter_name"] == chapter_filter]
+            if not problems:
+                problems = PROBLEM_KNOWLEDGE  # fallback dacă nu găsim probleme
+        
+        problem_data = random.choice(problems)
         problem_name = problem_data["problem_name"]
         enum_type = problem_data["enum_type"]
         chapter_name = problem_data["chapter_name"]
@@ -211,12 +234,28 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
 
         # Selectie uniforma intre tipurile disponibile
         available_types = ["strategy"]  # mereu disponibil
-        if genereaza_intrebare_minimax:
-            available_types.append("minimax")
-        if genereaza_intrebare_nash:
-            available_types.append("nash")
-        if genereaza_problema_csp:
-            available_types.append("csp")
+        
+        # Filtrare în funcție de capitol
+        if chapter_filter:
+            if chapter_filter == "Teoria Jocurilor":
+                # Doar Nash pentru Teoria Jocurilor
+                if genereaza_intrebare_nash:
+                    return genereaza_intrebare_nash(answer_type="text")
+            elif chapter_filter == "Algoritmi de cautare si CSP":
+                # CSP și Minimax pentru acest capitol
+                if genereaza_intrebare_minimax:
+                    available_types.append("minimax")
+                if genereaza_problema_csp:
+                    available_types.append("csp")
+            # Pentru "Strategii algoritmice" rămâne doar "strategy"
+        else:
+            # Fără filtru - toate tipurile
+            if genereaza_intrebare_minimax:
+                available_types.append("minimax")
+            if genereaza_intrebare_nash:
+                available_types.append("nash")
+            if genereaza_problema_csp:
+                available_types.append("csp")
         
         selected_type = random.choice(available_types)
         
@@ -230,7 +269,14 @@ def genereaza_intrebare_strategie(answer_type="multiple"):
             return csp_question
         # else: fallback la strategy (continua mai jos)
 
-        strategy_data = random.choice(TEXT_KNOWLEDGE)
+        # Pentru strategy, filtrăm după capitol dacă e necesar
+        strategies = TEXT_KNOWLEDGE
+        if chapter_filter and chapter_filter != "Teoria Jocurilor":
+            strategies = [s for s in TEXT_KNOWLEDGE if s["chapter_name"] == chapter_filter]
+            if not strategies:
+                strategies = TEXT_KNOWLEDGE  # fallback
+        
+        strategy_data = random.choice(strategies)
         strategy_name = strategy_data["strategy_name"]
         keywords = strategy_data["keywords"]
         description = strategy_data["description"]
