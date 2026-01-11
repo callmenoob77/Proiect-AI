@@ -19,6 +19,17 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
     """
     Evalueaza rapsunsul in functie de tipul intrebarii
     """
+    # Verificare răspuns gol - scor 0
+    if not user_answer or user_answer.strip() == "":
+        return {
+            "is_correct": False,
+            "score": 0.0,
+            "details": {
+                "match_type": "no_answer",
+                "message": "Răspuns lipsă sau gol"
+            }
+        }
+    
     #normalizare
     user_answer_norm = user_answer.lower().replace(" ", "").strip()
 
