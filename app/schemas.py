@@ -9,6 +9,7 @@ class GenerationRequest(BaseModel):
     """
     answer_type: str = Field(default="multiple", description="Tipul răspunsului: 'multiple' sau 'text'")
     chapter_filter: Optional[str] = Field(default=None, description="Filtru pentru capitol specific")
+    difficulty: int = Field(default=2, ge=1, le=3, description="1: Easy, 2: Medium, 3: Hard")
 
 class AnswerSubmission(BaseModel):
     """

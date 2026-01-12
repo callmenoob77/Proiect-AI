@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, AlertCircle, Trophy, Clock, BookOpen, Home } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Trophy, Clock, BookOpen, Home, Sparkles } from 'lucide-react';
 import TreeVisualizer from './TreeVisualizer';
 import GameMatrixVisualizer from './GameMatrixVisualizer';
 
-export default function TestMode({ onBackToHome, apiBaseUrl }) {
+export default function TestMode({ onBackToHome, apiBaseUrl, difficulty }) {
   const [testState, setTestState] = useState('setup'); // setup, taking, results
   const [numQuestions, setNumQuestions] = useState(5);
   const [testData, setTestData] = useState(null);
@@ -18,7 +18,7 @@ export default function TestMode({ onBackToHome, apiBaseUrl }) {
   const generateTest = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${apiBaseUrl}/api/test/generate?num_questions=${numQuestions}`, {
+      const response = await fetch(`${apiBaseUrl}/api/test/generate?num_questions=${numQuestions}&difficulty=${difficulty}`, {
         method: 'POST'
       });
 
@@ -149,6 +149,15 @@ export default function TestMode({ onBackToHome, apiBaseUrl }) {
             <BookOpen className="w-16 h-16 mx-auto text-purple-600 mb-4" />
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Creează Test</h1>
             <p className="text-gray-600">Testează-ți cunoștințele cu întrebări multiple choice</p>
+          {/* Adaugă acest bloc aici */}
+<div className="flex justify-center mb-6">
+  <div className="bg-purple-100 border border-purple-200 rounded-full px-4 py-1 flex items-center gap-2">
+    <Sparkles className="w-4 h-4 text-purple-600" />
+    <span className="text-sm font-bold text-purple-700">
+      Dificultate: {difficulty === 1 ? 'Ușor' : difficulty === 2 ? 'Mediu' : 'Greu'}
+    </span>
+  </div>
+</div>
           </div>
 
           {/* Selector mod Practice/Exam */}

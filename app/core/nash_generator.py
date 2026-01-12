@@ -47,18 +47,27 @@ def _generate_matrix_with_nash() -> Tuple[List[List[Tuple[int, int]]], int, int]
     return matrix, len(matrix), len(matrix[0])
 
 
-def genereaza_intrebare_nash(answer_type: str = "multiple") -> Dict[str, Any]:
+def genereaza_intrebare_nash(answer_type: str = "multiple", difficulty: int = 2) -> Dict[str, Any]:
     """Genereaza intrebare Nash Equilibrium pentru joc in forma normala."""
-    
-    if random.random() < 0.7:
+
+    if difficulty == 1:
         rows, cols = 2, 2
-    else:
-        rows, cols = random.choice([(2, 3), (3, 2), (3, 3)])
-    
-    if random.random() < 0.6:
+    elif difficulty == 2:
+        rows, cols = random.choice([(2, 2), (2, 3), (3, 2)])
+    else:  # Hard
+        rows, cols = 3, 3
+
+        # 2. Generăm matricea
+        # La Easy/Medium preferăm jocuri cu echilibru garantat pentru a fi mai clar
+    chance_for_classic = 0.8 if difficulty == 1 else 0.5
+
+    if random.random() < chance_for_classic and rows == 2 and cols == 2:
         matrix, rows, cols = _generate_matrix_with_nash()
     else:
         matrix = _generate_random_matrix(rows, cols)
+        # Pentru Hard, putem crește plaja valorilor
+        if difficulty == 3:
+            matrix = [[(random.randint(-10, 20), random.randint(-10, 20)) for _ in range(cols)] for _ in range(rows)]
     
     nash_list = find_pure_nash(matrix)
     
@@ -114,7 +123,7 @@ def genereaza_intrebare_nash(answer_type: str = "multiple") -> Dict[str, Any]:
             "title": "Echilibru Nash - Joc în formă normală",
             "prompt": prompt,
             "question_type": "GAME_MATRIX",
-            "difficulty": 3,
+            "difficulty": difficulty,
             "problem_instance": {"matrix": matrix_data},
             "correct_answer": {
                 "reference_text": reference_solution,
@@ -159,7 +168,7 @@ def genereaza_intrebare_nash(answer_type: str = "multiple") -> Dict[str, Any]:
         "title": "Echilibru Nash - Joc în formă normală",
         "prompt": prompt,
         "question_type": "GAME_MATRIX",
-        "difficulty": 3,
+        "difficulty": difficulty,
         "problem_instance": {"matrix": matrix_data},
         "correct_answer": {
             "answer": correct_answer,

@@ -21,7 +21,8 @@ def handle_generate_strategy_question(
     try:
         question_data = genereaza_intrebare_strategie(
             answer_type=request.answer_type,
-            chapter_filter=request.chapter_filter
+            chapter_filter=request.chapter_filter,
+            difficulty=request.difficulty
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

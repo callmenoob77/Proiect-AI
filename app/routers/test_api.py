@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.post("/test/generate")
-def generate_test(num_questions: int = 5, db: Session = Depends(get_db)):
+def generate_test(num_questions: int = 5, difficulty: int = 2,db: Session = Depends(get_db)):
     """
     Generează un test cu N întrebări de tip multiple choice
     """
@@ -30,7 +30,7 @@ def generate_test(num_questions: int = 5, db: Session = Depends(get_db)):
     for i in range(num_questions):
         try:
             # Generăm doar întrebări multiple choice
-            question_data = genereaza_intrebare_strategie(answer_type="multiple")
+            question_data = genereaza_intrebare_strategie(answer_type="multiple", difficulty=difficulty)
 
             # Salvăm în baza de date
             # Punem options în problem_instance pentru a le păstra
@@ -41,7 +41,7 @@ def generate_test(num_questions: int = 5, db: Session = Depends(get_db)):
                 title=question_data["title"],
                 prompt=question_data["prompt"],
                 question_type=question_data["question_type"],
-                difficulty=question_data.get("difficulty", 3),
+                difficulty=question_data.get("difficulty", difficulty),
                 problem_instance=problem_instance_data,
                 correct_answer=question_data["correct_answer"],
                 reference_solution=question_data["reference_solution"]

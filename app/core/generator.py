@@ -80,7 +80,7 @@ PROMPT_QUESTIONS = [
     "identifica strategia de baza pentru aceasta problema din optiunile: {options_string}."
 ]
 
-def genereaza_intrebare_strategie(answer_type="multiple", chapter_filter=None):
+def genereaza_intrebare_strategie(answer_type="multiple", chapter_filter=None, difficulty=2):
     
     if answer_type == "multiple":
         
@@ -92,7 +92,7 @@ def genereaza_intrebare_strategie(answer_type="multiple", chapter_filter=None):
             if chapter_filter == "Teoria Jocurilor":
                 # Doar Nash pentru Teoria Jocurilor
                 if genereaza_intrebare_nash:
-                    return genereaza_intrebare_nash(answer_type="multiple")
+                    return genereaza_intrebare_nash(answer_type="multiple", difficulty=difficulty)
             elif chapter_filter == "Algoritmi de cautare si CSP":
                 # CSP și Minimax pentru acest capitol
                 if genereaza_problema_csp:
@@ -110,13 +110,13 @@ def genereaza_intrebare_strategie(answer_type="multiple", chapter_filter=None):
                 available_types.append("nash")
         
         selected_type = random.choice(available_types)
-        
+
         if selected_type == "csp":
-            return genereaza_problema_csp()
+            return genereaza_problema_csp(difficulty=difficulty)
         elif selected_type == "minimax":
-            return genereaza_intrebare_minimax(answer_type="multiple")
+            return genereaza_intrebare_minimax(answer_type="multiple", difficulty=difficulty)
         elif selected_type == "nash":
-            return genereaza_intrebare_nash(answer_type="multiple")
+            return genereaza_intrebare_nash(answer_type="multiple", difficulty=difficulty)
              
         # Pentru strategy, filtrăm problemele după capitol dacă e necesar
         problems = PROBLEM_KNOWLEDGE
@@ -148,33 +148,62 @@ def genereaza_intrebare_strategie(answer_type="multiple", chapter_filter=None):
                 correct_answer = "Uniform Cost Search" 
 
         elif enum_type == "KNIGHT_TOUR":
-            size = random.choice([5, 6, 8, 10])
-            if size <= 6:
-                instance = f"tabla de {size}x{size} (o instanta mica)"
+            if difficulty == 1:
+                instance = "tabla de 5x5 (instanta mica)"
                 correct_answer = "DFS sau Hillclimbing"
             else:
-                instance = f"tabla de {size}x{size} (o instanta mare)"
-                correct_answer = "Backtracking cu euristica Warnsdorff" 
+                instance = f"tabla de {8 if difficulty == 2 else 12}x{8 if difficulty == 2 else 12}"
+                correct_answer = "Backtracking cu euristica Warnsdorff"
 
         elif enum_type == "N_QUEENS":
-            size = random.randint(4, 10)
+            if difficulty == 1:
+                size = 4  # Cea mai simplă tablă
+            elif difficulty == 2:
+                size = random.randint(5, 8)
+            else:
+                size = random.randint(10, 14)  # Hard
             instance = f"tabla de {size}x{size}"
             correct_answer = "Backtracking"
-            
+
         elif enum_type == "HANOI":
-            discuri = random.randint(3, 7)
-            tije = random.randint(3, 5)
+            # Dificultatea crește numărul de discuri
+            if difficulty == 1:
+                discuri = 3
+                tije = 3
+            elif difficulty == 2:
+                discuri = random.randint(4, 5)
+                tije = 3
+            else:
+                discuri = random.randint(6, 8)
+                tije = random.randint(3, 4)
+
             instance = f"{discuri} discuri si {tije} tije"
             correct_answer = "DFS (Depth-First Search)"
 
         elif enum_type == "GRAPH_COLORING":
-            noduri = random.randint(4, 7)
-            culori = random.randint(3, 4)
+            # Dificultatea crește numărul de noduri și scade numărul de culori (face problema mai grea)
+            if difficulty == 1:
+                noduri = 4
+                culori = 4
+            elif difficulty == 2:
+                noduri = random.randint(5, 7)
+                culori = 3
+            else:
+                noduri = random.randint(8, 12)
+                culori = 3
+
             instance = f"colorarea unui graf cu {noduri} noduri folosind {culori} culori"
             correct_answer = "Backtracking (CSP)"
 
         elif enum_type == "SLIDING_PUZZLE":
-            size = random.choice(['3x3', '4x4'])
+            # Dificultatea determină mărimea grilei
+            if difficulty == 1:
+                size = "2x2 (format redus)"
+            elif difficulty == 2:
+                size = "3x3"
+            else:
+                size = "4x4"
+
             instance = f"puzzle {size} cu o piesa lipsa"
             correct_answer = "A* Search"
 
@@ -220,7 +249,7 @@ def genereaza_intrebare_strategie(answer_type="multiple", chapter_filter=None):
             "title": title_text,
             "prompt": prompt_text,
             "question_type": enum_type,
-            "difficulty": 3,
+            "difficulty": difficulty,
             "problem_instance": {"problem": problem_name, "instance": instance},
             "correct_answer": {"answer": correct_answer},
             "reference_solution": f"Raspunsul corect este {correct_answer}. Pentru instanta {instance}, aceasta este strategia generala/optima.",
@@ -240,7 +269,7 @@ def genereaza_intrebare_strategie(answer_type="multiple", chapter_filter=None):
             if chapter_filter == "Teoria Jocurilor":
                 # Doar Nash pentru Teoria Jocurilor
                 if genereaza_intrebare_nash:
-                    return genereaza_intrebare_nash(answer_type="text")
+                    return genereaza_intrebare_nash(answer_type="text", difficulty=difficulty)
             elif chapter_filter == "Algoritmi de cautare si CSP":
                 # CSP și Minimax pentru acest capitol
                 if genereaza_intrebare_minimax:
@@ -258,13 +287,14 @@ def genereaza_intrebare_strategie(answer_type="multiple", chapter_filter=None):
                 available_types.append("csp")
         
         selected_type = random.choice(available_types)
-        
+
         if selected_type == "minimax":
-            return genereaza_intrebare_minimax(answer_type="text")
+            return genereaza_intrebare_minimax(answer_type="text", difficulty=difficulty)
         elif selected_type == "nash":
-            return genereaza_intrebare_nash(answer_type="text")
+            return genereaza_intrebare_nash(answer_type="text", difficulty=difficulty)
         elif selected_type == "csp":
-            csp_question = genereaza_problema_csp()
+            # Atenție aici: genereaza_problema_csp returnează de obicei un obiect complet
+            csp_question = genereaza_problema_csp(difficulty=difficulty)
             csp_question["answer_type"] = "text"
             return csp_question
         # else: fallback la strategy (continua mai jos)
@@ -294,7 +324,7 @@ def genereaza_intrebare_strategie(answer_type="multiple", chapter_filter=None):
             "title": title_text,
             "prompt": prompt_text,
             "question_type": "A_STAR_DESCRIPTION",
-            "difficulty": 3,
+            "difficulty": difficulty,
             "problem_instance": {"strategy": strategy_name},
             "correct_answer": {"keywords": keywords, "reference_text": description},
             "reference_solution": description,

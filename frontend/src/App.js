@@ -13,6 +13,7 @@ export default function QuestionApp() {
   const [evaluationResult, setEvaluationResult] = useState(null);
   const [error, setError] = useState(null);
   const [score, setScore] = useState(0);
+  const [selectedDifficulty, setSelectedDifficulty] = useState(2);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [answerType, setAnswerType] = useState('multiple');
   const [submitting, setSubmitting] = useState(false);
@@ -46,8 +47,9 @@ export default function QuestionApp() {
 
     try {
       const requestBody = {
-        answer_type: type
-      };
+      answer_type: type,
+      difficulty: selectedDifficulty
+    };
       if (selectedChapter !== 'all') {
         requestBody.chapter_filter = selectedChapter;
       }
@@ -593,22 +595,40 @@ export default function QuestionApp() {
 
               {/* SELECTOR CAPITOL */}
               {selectedMode === 'question' && (
-                <div className="mb-8">
-                  <label className="block text-left text-gray-700 font-semibold mb-3">
-                    Alege capitolul:
-                  </label>
-                  <select
-                    value={selectedChapter}
-                    onChange={(e) => setSelectedChapter(e.target.value)}
-                    className="w-full p-4 rounded-xl border-2 border-purple-300 bg-white font-medium text-gray-700 hover:border-purple-500 transition-colors"
-                  >
-                    <option value="all">Toate capitolele</option>
-                    <option value="Strategii algoritmice">Strategii algoritmice</option>
-                    <option value="Algoritmi de cautare si CSP">Algoritmi de căutare și CSP</option>
-                    <option value="Teoria Jocurilor">Teoria Jocurilor</option>
-                  </select>
-                </div>
-              )}
+  <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Am adăugat grid pentru a sta lângă capitol */}
+    <div>
+      <label className="block text-left text-gray-700 font-semibold mb-3">
+        Alege capitolul:
+      </label>
+      <select
+        value={selectedChapter}
+        onChange={(e) => setSelectedChapter(e.target.value)}
+        className="w-full p-4 rounded-xl border-2 border-purple-300 bg-white font-medium text-gray-700 hover:border-purple-500 transition-colors"
+      >
+        <option value="all">Toate capitolele</option>
+        <option value="Strategii algoritmice">Strategii algoritmice</option>
+        <option value="Algoritmi de cautare si CSP">Algoritmi de căutare și CSP</option>
+        <option value="Teoria Jocurilor">Teoria Jocurilor</option>
+      </select>
+    </div>
+
+    {/* SELECTOR DIFICULTATE (NOU) */}
+    <div>
+      <label className="block text-left text-gray-700 font-semibold mb-3">
+        Dificultate:
+      </label>
+      <select
+        value={selectedDifficulty}
+        onChange={(e) => setSelectedDifficulty(parseInt(e.target.value))}
+        className="w-full p-4 rounded-xl border-2 border-blue-300 bg-white font-medium text-gray-700 hover:border-blue-500 transition-colors"
+      >
+        <option value={1}>Ușor (Instanțe mici)</option>
+        <option value={2}>Mediu (Standard)</option>
+        <option value={3}>Greu (Complex)</option>
+      </select>
+    </div>
+  </div>
+)}
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <button
