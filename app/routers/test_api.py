@@ -5,6 +5,7 @@ import random
 
 from ..database import get_db
 from ..models import Question
+from ..models.enums import QuestionTypeEnum
 from ..schemas import GenerationRequest, AnswerSubmission, EvaluationResult
 
 # Import corect pentru generator din app/core/
@@ -37,10 +38,15 @@ def generate_test(num_questions: int = 5, difficulty: int = 2,db: Session = Depe
             problem_instance_data = question_data.get("problem_instance", {})
             problem_instance_data["options"] = question_data.get("options", [])
 
+            # Convertim question_type la enum daca e string
+            q_type = question_data["question_type"]
+            if isinstance(q_type, str):
+                q_type = QuestionTypeEnum(q_type)
+            
             db_question = Question(
                 title=question_data["title"],
                 prompt=question_data["prompt"],
-                question_type=question_data["question_type"],
+                question_type=q_type,
                 difficulty=question_data.get("difficulty", difficulty),
                 problem_instance=problem_instance_data,
                 correct_answer=question_data["correct_answer"],

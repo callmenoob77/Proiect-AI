@@ -47,9 +47,9 @@ export default function QuestionApp() {
 
     try {
       const requestBody = {
-      answer_type: type,
-      difficulty: selectedDifficulty
-    };
+        answer_type: type,
+        difficulty: selectedDifficulty
+      };
       if (selectedChapter !== 'all') {
         requestBody.chapter_filter = selectedChapter;
       }
@@ -80,11 +80,11 @@ export default function QuestionApp() {
     if (!patternType) return;
 
     const needsInputs = patternType !== 'MINIMAX' && patternType !== 'NASH';
-    
+
     // Validare câmpuri - verifică că toate valorile sunt completate
     if (needsInputs) {
       const emptyFields = [];
-      
+
       if (patternType === 'THEORY') {
         if (!patternInputs.strategy_name || patternInputs.strategy_name.trim() === '') {
           emptyFields.push('Nume strategie');
@@ -136,7 +136,7 @@ export default function QuestionApp() {
           }
         }
       }
-      
+
       if (emptyFields.length > 0) {
         setValidationError(`Te rugăm să completezi toate câmpurile: ${emptyFields.join(', ')}`);
         return;
@@ -171,7 +171,7 @@ export default function QuestionApp() {
 
       const data = await response.json();
       setQuestion(data);
-      
+
       // Nu resetăm inputs când generăm întrebare nouă de același tip
       if (!keepInputs) {
         setPatternInputs({});
@@ -309,7 +309,7 @@ export default function QuestionApp() {
 
   // ===== RENDERARE TEST MODE =====
   if (showTestMode) {
-    return <TestMode onBackToHome={() => setShowTestMode(false)} apiBaseUrl={API_BASE_URL} />;
+    return <TestMode onBackToHome={() => setShowTestMode(false)} apiBaseUrl={API_BASE_URL} difficulty={selectedDifficulty} />;
   }
 
   if (loading) {
@@ -595,40 +595,40 @@ export default function QuestionApp() {
 
               {/* SELECTOR CAPITOL */}
               {selectedMode === 'question' && (
-  <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Am adăugat grid pentru a sta lângă capitol */}
-    <div>
-      <label className="block text-left text-gray-700 font-semibold mb-3">
-        Alege capitolul:
-      </label>
-      <select
-        value={selectedChapter}
-        onChange={(e) => setSelectedChapter(e.target.value)}
-        className="w-full p-4 rounded-xl border-2 border-purple-300 bg-white font-medium text-gray-700 hover:border-purple-500 transition-colors"
-      >
-        <option value="all">Toate capitolele</option>
-        <option value="Strategii algoritmice">Strategii algoritmice</option>
-        <option value="Algoritmi de cautare si CSP">Algoritmi de căutare și CSP</option>
-        <option value="Teoria Jocurilor">Teoria Jocurilor</option>
-      </select>
-    </div>
+                <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Am adăugat grid pentru a sta lângă capitol */}
+                  <div>
+                    <label className="block text-left text-gray-700 font-semibold mb-3">
+                      Alege capitolul:
+                    </label>
+                    <select
+                      value={selectedChapter}
+                      onChange={(e) => setSelectedChapter(e.target.value)}
+                      className="w-full p-4 rounded-xl border-2 border-purple-300 bg-white font-medium text-gray-700 hover:border-purple-500 transition-colors"
+                    >
+                      <option value="all">Toate capitolele</option>
+                      <option value="Strategii algoritmice">Strategii algoritmice</option>
+                      <option value="Algoritmi de cautare si CSP">Algoritmi de căutare și CSP</option>
+                      <option value="Teoria Jocurilor">Teoria Jocurilor</option>
+                    </select>
+                  </div>
 
-    {/* SELECTOR DIFICULTATE (NOU) */}
-    <div>
-      <label className="block text-left text-gray-700 font-semibold mb-3">
-        Dificultate:
-      </label>
-      <select
-        value={selectedDifficulty}
-        onChange={(e) => setSelectedDifficulty(parseInt(e.target.value))}
-        className="w-full p-4 rounded-xl border-2 border-blue-300 bg-white font-medium text-gray-700 hover:border-blue-500 transition-colors"
-      >
-        <option value={1}>Ușor (Instanțe mici)</option>
-        <option value={2}>Mediu (Standard)</option>
-        <option value={3}>Greu (Complex)</option>
-      </select>
-    </div>
-  </div>
-)}
+                  {/* SELECTOR DIFICULTATE (NOU) */}
+                  <div>
+                    <label className="block text-left text-gray-700 font-semibold mb-3">
+                      Dificultate:
+                    </label>
+                    <select
+                      value={selectedDifficulty}
+                      onChange={(e) => setSelectedDifficulty(parseInt(e.target.value))}
+                      className="w-full p-4 rounded-xl border-2 border-blue-300 bg-white font-medium text-gray-700 hover:border-blue-500 transition-colors"
+                    >
+                      <option value={1}>Ușor (Instanțe mici)</option>
+                      <option value={2}>Mediu (Standard)</option>
+                      <option value={3}>Greu (Complex)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <button
@@ -636,11 +636,10 @@ export default function QuestionApp() {
                     setAnswerType('multiple');
                     setSelectedMode('question');
                   }}
-                  className={`p-6 border-4 rounded-2xl transition-all ${
-                    answerType === 'multiple' && selectedMode === 'question'
-                      ? 'border-purple-500 bg-purple-50' 
+                  className={`p-6 border-4 rounded-2xl transition-all ${answerType === 'multiple' && selectedMode === 'question'
+                      ? 'border-purple-500 bg-purple-50'
                       : 'border-gray-200 hover:border-purple-400 hover:bg-purple-50'
-                  }`}
+                    }`}
                 >
                   <ListChecks className="w-12 h-12 mx-auto text-purple-600 mb-3" />
                   <p className="font-bold text-gray-800">Răspuns Multiplu</p>
@@ -652,11 +651,10 @@ export default function QuestionApp() {
                     setAnswerType('text');
                     setSelectedMode('question');
                   }}
-                  className={`p-6 border-4 rounded-2xl transition-all ${
-                    answerType === 'text' && selectedMode === 'question'
-                      ? 'border-blue-500 bg-blue-50' 
+                  className={`p-6 border-4 rounded-2xl transition-all ${answerType === 'text' && selectedMode === 'question'
+                      ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-blue-400 hover:bg-blue-50'
-                  }`}
+                    }`}
                 >
                   <Type className="w-12 h-12 mx-auto text-blue-600 mb-3" />
                   <p className="font-bold text-gray-800">Răspuns Text</p>
@@ -665,11 +663,10 @@ export default function QuestionApp() {
 
                 <button
                   onClick={() => setSelectedMode('test')}
-                  className={`p-6 border-4 rounded-2xl transition-all ${
-                    selectedMode === 'test'
+                  className={`p-6 border-4 rounded-2xl transition-all ${selectedMode === 'test'
                       ? 'border-green-500 bg-green-50'
                       : 'border-gray-200 hover:border-green-400 hover:bg-green-50'
-                  }`}
+                    }`}
                 >
                   <BookOpen className="w-12 h-12 mx-auto text-green-600 mb-3" />
                   <p className="font-bold text-gray-800">Creează Test</p>

@@ -71,8 +71,8 @@ def genereaza_intrebare_nash(answer_type: str = "multiple", difficulty: int = 2)
     
     nash_list = find_pure_nash(matrix)
     
-    row_strategies = ["Sus", "Jos", "Mijloc"][:rows]
-    col_strategies = ["Stânga", "Dreapta", "Centru"][:cols]
+    row_strategies = ["Sus", "Mijloc", "Jos"][:rows]
+    col_strategies = ["Stânga", "Centru", "Dreapta"][:cols]
     
     if len(nash_list) == 0:
         correct_answer = "Nu există echilibru Nash pur"

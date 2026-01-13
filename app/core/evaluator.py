@@ -1,10 +1,10 @@
 from typing import Dict, Any,Tuple,Optional
-import spacy
+from sentence_transformers import SentenceTransformer, util
 import re 
 import unicodedata
 
-#model folosit pentru similaritate semantica
-nlp = spacy.load("ro_core_news_md")
+# Model pentru similaritate semantica (multilingv, suporta romana)
+semantic_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
 
 def normalize_text(text: str) -> str:
     """elimina diacritice, normalizeaza textul"""
@@ -412,6 +412,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
         has_nash = correct_answer_json.get("has_nash", True)
         correct_text = correct_answer_json.get("answer", "") or correct_answer_json.get("answer_text", "")
         correct_text_norm = normalize_text(correct_text).replace(" ", "")
+        reference_text = correct_answer_json.get("reference_text", "")
         
         no_nash_keywords = ["nuexista", "nuare", "noexiste", "fara", "nimic"]
         user_says_no_nash = any(kw in user_answer_norm for kw in no_nash_keywords)
@@ -437,6 +438,7 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                 "details": {"match_type": "nash_wrong_cell_given", "expected": "Nu există echilibru Nash pur"}
             }
         
+        # Verificare exacta pentru raspunsuri scurte
         if correct_text_norm and correct_text_norm in user_answer_norm:
             return {
                 "is_correct": True,
@@ -444,21 +446,38 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
                 "details": {"match_type": "nash_exact_match", "expected": correct_text}
             }
         
-        # Verificare partiala prin strategii
+        # Verificare prin strategii mentionate
         nash_equilibria = correct_answer_json.get("nash_equilibria", [])
-        row_names = ["sus", "jos", "mijloc"]
-        col_names = ["stanga", "dreapta", "centru"]
+        row_names = ["sus", "mijloc", "jos"]
+        col_names = ["stanga", "centru", "dreapta"]
         
+        matched_equilibria = 0
         for eq in nash_equilibria:
             if eq[0] < len(row_names) and eq[1] < len(col_names):
                 row_name = row_names[eq[0]]
                 col_name = col_names[eq[1]]
                 if row_name in user_answer_norm and col_name in user_answer_norm:
-                    return {
-                        "is_correct": True,
-                        "score": 100.0,
-                        "details": {"match_type": "nash_strategy_match", "expected": correct_text}
-                    }
+                    matched_equilibria += 1
+        
+        if matched_equilibria > 0:
+            score = min(100.0, (matched_equilibria / len(nash_equilibria)) * 100) if nash_equilibria else 100.0
+            return {
+                "is_correct": score >= 50,
+                "score": score,
+                "details": {"match_type": "nash_strategy_match", "matched": matched_equilibria, "total": len(nash_equilibria)}
+            }
+        
+        # Fallback: evaluare semantica pentru raspunsuri explicative
+        if reference_text:
+            embeddings = semantic_model.encode([user_answer, reference_text], convert_to_tensor=True)
+            similarity = util.cos_sim(embeddings[0], embeddings[1]).item()
+            final_score = max(0, min(100, similarity * 100))
+            
+            return {
+                "is_correct": final_score >= 60,
+                "score": round(final_score, 2),
+                "details": {"match_type": "nash_semantic", "similarity": round(similarity, 4)}
+            }
         
         return {
             "is_correct": False,
@@ -476,51 +495,38 @@ def evaluate_answer(correct_answer_json: Dict[str, Any], user_answer: str, quest
         }
 
 
-    #evaluare semantica pentru raspunsuri text
+    # Evaluare hibrida: Sentence Transformers + Keywords
     if "reference_text" in correct_answer_json:
         reference_text = correct_answer_json["reference_text"]
-        user_doc = nlp(user_answer)
-        ref_doc = nlp(reference_text)
-
-        # Similaritate semantică
-        semantic_score = 0.0
-        if user_doc.has_vector and ref_doc.has_vector:
-            semantic_score = user_doc.similarity(ref_doc)
-
-        # Evaluare pe bază de keywords dacă există
+        
+        # 1. Similaritate semantica (60%)
+        embeddings = semantic_model.encode([user_answer, reference_text], convert_to_tensor=True)
+        similarity = util.cos_sim(embeddings[0], embeddings[1]).item()
+        semantic_score = similarity
+        
+        # 2. Keyword matching (40%)
         keyword_score = 0.0
-        if "keywords" in correct_answer_json:
-            keywords = correct_answer_json["keywords"]
-            if keywords:
-                user_answer_normalized = normalize_text(user_answer)
-                matched_keywords = 0
-                
-                for keyword in keywords:
-                    keyword_norm = normalize_text(keyword)
-                    # Match exact sau ca parte din cuvânt
-                    if keyword_norm in user_answer_normalized:
-                        matched_keywords += 1
-                
-                # Scor bazat pe procentul de keywords găsite
-                keyword_score = matched_keywords / len(keywords) if len(keywords) > 0 else 0.0
+        keywords = correct_answer_json.get("keywords", [])
+        if keywords:
+            user_answer_normalized = normalize_text(user_answer)
+            matched = sum(1 for kw in keywords if normalize_text(kw) in user_answer_normalized)
+            keyword_score = matched / len(keywords)
         
-        # Combinăm scorurile: 60% semantic + 40% keywords (dacă există)
-        if keyword_score > 0:
-            combined_score = (semantic_score * 0.6) + (keyword_score * 0.4)
+        # Combina scorurile
+        if keywords:
+            combined = (semantic_score * 0.6) + (keyword_score * 0.4)
         else:
-            combined_score = semantic_score
+            combined = semantic_score
         
-        # Scalare la 100
-        final_score = max(0, min(100, combined_score * 100))
+        final_score = max(0, min(100, combined * 100))
         
         return {
-            "is_correct": final_score >= 60,  # Pragul pentru corect
-            "score": final_score,
+            "is_correct": final_score >= 60,
+            "score": round(final_score, 2),
             "details": {
-                "match_type": "text_evaluation",
-                "semantic_similarity_score": round(semantic_score, 4),
-                "keyword_match_score": round(keyword_score, 4) if keyword_score > 0 else None,
-                "combined_score": round(combined_score, 4)
+                "match_type": "hybrid_evaluation",
+                "semantic_score": round(semantic_score, 4),
+                "keyword_score": round(keyword_score, 4) if keywords else None
             }
         }
 
