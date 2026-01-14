@@ -1,4 +1,4 @@
-# SmarTest AI
+# Proiect AI
 
 Aplicație web pentru generarea și evaluarea automată a întrebărilor din domeniul Inteligenței Artificiale. Sistemul suportă multiple tipuri de întrebări (strategie, CSP, Minimax, Nash Equilibrium) și oferă evaluare inteligentă a răspunsurilor folosind procesare de limbaj natural.
 
