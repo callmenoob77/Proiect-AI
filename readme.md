@@ -11,8 +11,9 @@ Aplicație web pentru generarea și evaluarea automată a întrebărilor din dom
 3. [Configurare Baza de Date](#configurare-baza-de-date)
 4. [Rulare](#rulare)
 5. [Ghid de Utilizare](#ghid-de-utilizare)
-6. [Funcționalități](#funcționalități)
-7. [Tehnologii Utilizate](#tehnologii-utilizate)
+6. [Structura Proiectului](#structura-proiectului)
+7. [Funcționalități](#funcționalități)
+8. [Tehnologii Utilizate](#tehnologii-utilizate)
 
 ---
 
@@ -116,6 +117,56 @@ ALTER TYPE question_type ADD VALUE IF NOT EXISTS 'MINIMAX_TREE';
 ALTER TYPE question_type ADD VALUE IF NOT EXISTS 'GAME_MATRIX';
 ```
 
+### 4. Conexiune la baza de date hostată (Neon)
+
+Dacă folosiți o bază de date PostgreSQL hostată în cloud (Neon), urmați acești pași pentru configurarea conexiunii în pgAdmin:
+
+**Pasul 1: Obțineți datele de conectare**
+
+Veți primi un URL de conectare (connection string) de forma:
+```
+postgresql://neondb_owner:PAROLA_SECRETA@ep-purple-scene-xxxx.aws.neon.tech/neondb
+```
+
+**Pasul 2: Adăugați un server nou în pgAdmin**
+
+1. Deschideți pgAdmin
+2. Click-dreapta pe "Servers" în meniul din stânga
+3. Selectați "Create" -> "Server..."
+
+**Pasul 3: Completați detaliile conexiunii**
+
+Tab-ul **General**:
+- Name: `Proiect-AI Neon` (sau alt nume descriptiv)
+
+Tab-ul **Connection**:
+
+| Câmp | Valoare (din URL) |
+|------|-------------------|
+| Host name/address | Partea după `@` și înainte de `/` (ex: `ep-purple-scene-xxxx.aws.neon.tech`) |
+| Port | `5432` |
+| Maintenance database | Partea după ultimul `/` (ex: `neondb`) |
+| Username | Partea dintre `//` și `:` (ex: `neondb_owner`) |
+| Password | Parola din URL (`PAROLA_SECRETA`) |
+
+**Pasul 4: Configurați SSL (OBLIGATORIU)**
+
+1. Mergeți la tab-ul **Parameters**
+2. Găsiți rândul "SSL mode"
+3. Schimbați valoarea în **Require**
+
+**Pasul 5: Salvați și conectați-vă**
+
+Apăsați "Save". Serverul va apărea în lista din stânga. Pentru a vedea tabelele, navigați la:
+`Databases -> neondb -> Schemas -> public -> Tables`
+
+**Configurare în aplicație**
+
+În fișierul `app/database.py`, actualizați URL-ul:
+```python
+DATABASE_URL = "postgresql://neondb_owner:PAROLA_SECRETA@ep-purple-scene-xxxx.aws.neon.tech/neondb?sslmode=require"
+```
+
 ---
 
 ## Rulare
@@ -210,6 +261,38 @@ Pentru modul **Întrebare pe pattern**, selectați tipul și completați câmpur
 
 ---
 
+## Structura Proiectului
+
+```
+Proiect-AI/
+├── app/                          # Backend FastAPI
+│   ├── core/                     # Logica de bază
+│   │   ├── generator.py          # Generator întrebări principale
+│   │   ├── evaluator.py          # Evaluator răspunsuri (NLP)
+│   │   ├── csp_generator.py      # Generator CSP
+│   │   ├── minimax_generator.py  # Generator Minimax
+│   │   ├── minimax_solver.py     # Solver Alpha-Beta
+│   │   ├── nash_generator.py     # Generator Nash Equilibrium
+│   │   └── csp_solver.py         # Solver CSP
+│   ├── models/                   # Modele SQLAlchemy
+│   ├── routers/                  # API endpoints
+│   ├── schemas/                  # Scheme Pydantic
+│   ├── database.py               # Configurare DB
+│   └── main.py                   # Entry point aplicație
+├── frontend/                     # Frontend React
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── TreeVisualizer.js       # Vizualizare arbori Minimax
+│   │   │   ├── GameMatrixVisualizer.js # Vizualizare matrice Nash
+│   │   │   └── TestMode.jsx            # Componenta mod test
+│   │   └── App.js                # Componenta principală
+│   └── package.json
+├── requirements.txt              # Dependențe Python
+└── README.md                     # Acest fișier
+```
+
+---
+
 ## Funcționalități
 
 ### Tipuri de Întrebări
@@ -233,6 +316,8 @@ Sistemul folosește o abordare hibridă pentru evaluarea răspunsurilor text:
 - 60% - Similaritate semantică (Sentence Transformers)
 - 40% - Potrivire cuvinte cheie
 
+Model NLP utilizat: `paraphrase-multilingual-MiniLM-L12-v2` (suport limba română)
+
 ---
 
 ## Tehnologii Utilizate
@@ -248,6 +333,14 @@ Sistemul folosește o abordare hibridă pentru evaluarea răspunsurilor text:
 - React 18
 - Tailwind CSS
 - Lucide React (iconuri)
+
+---
+
+## Autori
+
+Proiect realizat pentru cursul de Inteligență Artificială.
+
+---
 
 ## Notă
 
