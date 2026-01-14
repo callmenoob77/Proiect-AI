@@ -11,9 +11,8 @@ Aplicație web pentru generarea și evaluarea automată a întrebărilor din dom
 3. [Configurare Baza de Date](#configurare-baza-de-date)
 4. [Rulare](#rulare)
 5. [Ghid de Utilizare](#ghid-de-utilizare)
-6. [Structura Proiectului](#structura-proiectului)
-7. [Funcționalități](#funcționalități)
-8. [Tehnologii Utilizate](#tehnologii-utilizate)
+6. [Funcționalități](#funcționalități)
+7. [Tehnologii Utilizate](#tehnologii-utilizate)
 
 ---
 
@@ -261,38 +260,6 @@ Pentru modul **Întrebare pe pattern**, selectați tipul și completați câmpur
 
 ---
 
-## Structura Proiectului
-
-```
-Proiect-AI/
-├── app/                          # Backend FastAPI
-│   ├── core/                     # Logica de bază
-│   │   ├── generator.py          # Generator întrebări principale
-│   │   ├── evaluator.py          # Evaluator răspunsuri (NLP)
-│   │   ├── csp_generator.py      # Generator CSP
-│   │   ├── minimax_generator.py  # Generator Minimax
-│   │   ├── minimax_solver.py     # Solver Alpha-Beta
-│   │   ├── nash_generator.py     # Generator Nash Equilibrium
-│   │   └── csp_solver.py         # Solver CSP
-│   ├── models/                   # Modele SQLAlchemy
-│   ├── routers/                  # API endpoints
-│   ├── schemas/                  # Scheme Pydantic
-│   ├── database.py               # Configurare DB
-│   └── main.py                   # Entry point aplicație
-├── frontend/                     # Frontend React
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── TreeVisualizer.js       # Vizualizare arbori Minimax
-│   │   │   ├── GameMatrixVisualizer.js # Vizualizare matrice Nash
-│   │   │   └── TestMode.jsx            # Componenta mod test
-│   │   └── App.js                # Componenta principală
-│   └── package.json
-├── requirements.txt              # Dependențe Python
-└── README.md                     # Acest fișier
-```
-
----
-
 ## Funcționalități
 
 ### Tipuri de Întrebări
@@ -333,15 +300,3 @@ Model NLP utilizat: `paraphrase-multilingual-MiniLM-L12-v2` (suport limba român
 - React 18
 - Tailwind CSS
 - Lucide React (iconuri)
-
----
-
-## Autori
-
-Proiect realizat pentru cursul de Inteligență Artificială.
-
----
-
-## Notă
-
-La prima rulare, modelul Sentence Transformers va fi descărcat automat (aproximativ 400MB). Aceasta poate dura câteva minute în funcție de viteza conexiunii la internet.
